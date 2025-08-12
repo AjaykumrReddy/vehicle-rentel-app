@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://41fc1ab924fb.ngrok-free.app', // Android emulator maps this to host localhost
+  baseURL: 'https://c9e41cc93170.ngrok-free.app', // Android emulator maps this to host localhost
   timeout: 10000,
 });
 
