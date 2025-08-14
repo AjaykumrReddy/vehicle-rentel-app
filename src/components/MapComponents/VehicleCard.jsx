@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
-import { calculateDistance } from '../utils/mapUtils';
-import { parsePoint } from '../utils/mapUtils';
+import { calculateDistance } from '../../utils/mapUtils';
+import { parsePoint } from '../../utils/mapUtils';
 
 export default function VehicleCard({ vehicle, onPress, userLocation }) {
   const getVehicleIcon = (vehicle) => {
@@ -18,7 +18,6 @@ export default function VehicleCard({ vehicle, onPress, userLocation }) {
 
   const getDistanceInfo = () => {
     const coords = parsePoint(vehicle.location)
-    console.log("coords - ",coords)
     const latitude = coords.latitude
     const longitude = coords.longitude
     
