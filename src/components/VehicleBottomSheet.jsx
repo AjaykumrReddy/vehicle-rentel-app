@@ -11,7 +11,8 @@ export default function VehicleBottomSheet({
   onVehiclePress,
   lastGesture,
   BOTTOM_SHEET_MIN_HEIGHT,
-  BOTTOM_SHEET_MAX_HEIGHT
+  BOTTOM_SHEET_MAX_HEIGHT,
+  userLocation
 }) {
   
   const expandBottomSheet = () => {
@@ -70,7 +71,8 @@ export default function VehicleBottomSheet({
           <VehicleCard 
             key={vehicle.id} 
             vehicle={vehicle} 
-            onPress={() => onVehiclePress(vehicle)} 
+            onPress={() => onVehiclePress(vehicle)}
+            userLocation={userLocation}
           />
         ))}
       </ScrollView>

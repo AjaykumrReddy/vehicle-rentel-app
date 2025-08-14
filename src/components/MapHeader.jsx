@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function MapHeader({ searchQuery, setSearchQuery }) {
+export default function MapHeader({ searchQuery, setSearchQuery, navigation }) {
   return (
     <View style={styles.header}>
       <TouchableOpacity style={styles.menuButton}>
@@ -15,7 +15,7 @@ export default function MapHeader({ searchQuery, setSearchQuery }) {
           onChangeText={setSearchQuery}
         />
       </View>
-      <TouchableOpacity style={styles.profileButton}>
+      <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
         <Text style={styles.profileIcon}>👤</Text>
       </TouchableOpacity>
     </View>

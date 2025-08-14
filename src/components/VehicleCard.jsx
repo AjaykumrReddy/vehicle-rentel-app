@@ -1,17 +1,53 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { calculateDistance } from '../utils/mapUtils';
+import { parsePoint } from '../utils/mapUtils';
 
-export default function VehicleCard({ vehicle, onPress }) {
+export default function VehicleCard({ vehicle, onPress, userLocation }) {
   const getVehicleIcon = (vehicle) => {
-    const type = vehicle.model.toLowerCase();
-    if (type.includes('bike') || type.includes('pulsar') || type.includes('hunter')) return '🏍️';
-    if (type.includes('activa') || type.includes('scooter')) return '🛵';
-    return '🚗';
+    const type = vehicle.vehicle_type.toLowerCase();
+    if (type.includes('bike')) return '🏍️';
+    if (type.includes('scooter')) return '🛵';
+    if (type.includes('car')) return '🚗';
+    return '🛺';
   };
 
   const getMarkerColor = (vehicle) => {
     return vehicle.available ? '#00C851' : '#ff4444';
   };
+
+  const getDistanceInfo = () => {
+    const coords = parsePoint(vehicle.location)
+    console.log("coords - ",coords)
+    const latitude = coords.latitude
+    const longitude = coords.longitude
+    
+    if (!userLocation || !latitude || !longitude) {
+      return { distance: 'N/A', walkTime: 'N/A' };
+    }
+
+    const distanceInMeters = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      latitude,
+      longitude
+    );
+
+    const distance = distanceInMeters < 1000 
+      ? `${Math.round(distanceInMeters)}m`
+      : `${(distanceInMeters / 1000).toFixed(1)}km`;
+
+    // Average walking speed: 5 km/h = 1.39 m/s
+    // Walk time = distance / speed
+    const walkTimeMinutes = Math.ceil(distanceInMeters / (5000 / 60));
+    const walkTime = walkTimeMinutes < 60 
+      ? `${walkTimeMinutes} min walk`
+      : `${Math.floor(walkTimeMinutes / 60)}h ${walkTimeMinutes % 60}m walk`;
+
+    return { distance, walkTime };
+  };
+
+  const { distance, walkTime } = getDistanceInfo();
 
   return (
     <TouchableOpacity style={styles.vehicleCard} onPress={onPress}>
@@ -20,7 +56,7 @@ export default function VehicleCard({ vehicle, onPress }) {
       </View>
       <View style={styles.vehicleInfo}>
         <Text style={styles.vehicleName}>{vehicle.brand} {vehicle.model}</Text>
-        <Text style={styles.vehicleDistance}>500m away • 6 min walk</Text>
+        <Text style={styles.vehicleDistance}>{distance} away • {walkTime}</Text>
         <View style={styles.vehicleStatus}>
           <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
           <Text style={styles.statusText}>{vehicle.available ? 'Available' : 'Not Available'}</Text>

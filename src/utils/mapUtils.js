@@ -19,10 +19,11 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export const getVehicleIcon = (vehicle) => {
-  const type = vehicle.model.toLowerCase();
-  if (type.includes('bike') || type.includes('pulsar') || type.includes('hunter')) return '🏍️';
-  if (type.includes('activa') || type.includes('scooter')) return '🛵';
-  return '🚗';
+  const type = vehicle.vehicle_type.toLowerCase();
+  if (type.includes('bike')) return '🏍️';
+  if (type.includes('scooter')) return '🛵';
+  if (type.includes('car')) return '🚗';
+  return '🛺';
 };
 
 export const getMarkerColor = (vehicle) => {
@@ -33,9 +34,10 @@ export const filterVehicles = (vehicles, filterType) => {
   if (filterType === 'All') return vehicles;
   const type = filterType.toLowerCase();
   return vehicles.filter(vehicle => {
-    const vehicleType = vehicle.model.toLowerCase();
-    if (type === 'bikes') return vehicleType.includes('bike') || vehicleType.includes('pulsar') || vehicleType.includes('hunter');
-    if (type === 'scooters') return vehicleType.includes('activa') || vehicleType.includes('scooter');
+    const vehicleType = vehicle.vehicle_type.toLowerCase();
+    if (type === 'bikes') return vehicleType.includes('bike');
+    if (type === 'scooters') return vehicleType.includes('scooter');
+    if (type === 'car') return vehicleType.includes('car');
     return false;
   });
 };

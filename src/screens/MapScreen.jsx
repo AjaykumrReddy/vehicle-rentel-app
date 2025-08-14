@@ -21,7 +21,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BOTTOM_SHEET_MIN_HEIGHT = 120;
 const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.5;
 
-export default function MapScreen() {
+export default function MapScreen({ navigation }) {
   const { location, loading, errorMsg } = useLocation();
   const [vehicles, setVehicles] = useState([]);
   const [fetchingVehicles, setFetchingVehicles] = useState(false);
@@ -186,7 +186,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <MapHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <MapHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} navigation={navigation} />
       
       <MapView
         ref={mapRef}
@@ -246,6 +246,7 @@ export default function MapScreen() {
         lastGesture={lastGesture}
         BOTTOM_SHEET_MIN_HEIGHT={BOTTOM_SHEET_MIN_HEIGHT}
         BOTTOM_SHEET_MAX_HEIGHT={BOTTOM_SHEET_MAX_HEIGHT}
+        userLocation={location}
       />
     </View>
   );

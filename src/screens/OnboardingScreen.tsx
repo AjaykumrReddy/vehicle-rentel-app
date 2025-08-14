@@ -7,7 +7,7 @@ export default function OnboardingScreen({ navigation }: any) {
             <Image source={require('../../assets/onboarding.png')} style={styles.image} />
             <Text style={styles.title}>Rent Vehicles Near You</Text>
             <Text style={styles.subtitle}>Find, book, and drive easily with our rental app</Text>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Map')}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.buttonText}>Get Started</Text>
             </TouchableOpacity>
         </View>

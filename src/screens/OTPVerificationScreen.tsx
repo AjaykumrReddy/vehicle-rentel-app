@@ -11,6 +11,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { sendOTP, verifyOTP } from '../api/authService';
+import { storeAuthData } from '../utils/storage';
 
 export default function OTPVerificationScreen({ navigation, route }: { navigation: any, route: any }) {
   const [otp, setOtp] = useState('');
@@ -62,8 +63,9 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
 
     try {
       const phoneNumber = mobile.replace('+91', '');
-      await verifyOTP(phoneNumber, codeToVerify);
-      navigation.navigate('Onboarding');
+      const authResponse = await verifyOTP(phoneNumber, codeToVerify);
+      await storeAuthData(authResponse);
+      navigation.navigate('Map');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Invalid OTP. Please try again.';
       setError(errorMessage);

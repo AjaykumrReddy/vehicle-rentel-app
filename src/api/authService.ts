@@ -25,3 +25,8 @@ export async function verifyOTP(phoneNumber: string, otp: string): Promise<Verif
   });
   return response.data;
 }
+
+export async function getUserVehicles(): Promise<any[]> {
+  const response = await api.get('/users/vehicles');
+  return response.data;
+}

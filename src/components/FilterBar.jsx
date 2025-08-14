@@ -14,7 +14,7 @@ export default function FilterBar({ bottomSheetAnim, BOTTOM_SHEET_MIN_HEIGHT, BO
       }
     ]}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {['All', 'Bikes', 'Scooters'].map((type) => (
+        {['All', 'Bikes', 'Scooters','Cars'].map((type) => (
           <TouchableOpacity
             key={type}
             style={[styles.filterChip, filterType === type && styles.filterChipActive]}
