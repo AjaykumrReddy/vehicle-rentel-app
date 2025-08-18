@@ -10,10 +10,10 @@ import {
 import { getUserData, clearAuthData, getAuthToken } from '../utils/storage';
 import { getUserVehicles } from '../api/authService';
 import api from '../api/axios';
-import ProfileHeader from '../components/ProfileHeader';
-import MyVehiclesSection from '../components/MyVehiclesSection';
-import ProfileSettings from '../components/ProfileSettings';
-import ProfileMenu from '../components/ProfileMenu';
+import ProfileHeader from '../components/ProfileComponents/ProfileHeader';
+import MyVehiclesSection from '../components/ProfileComponents/MyVehiclesSection';
+import ProfileSettings from '../components/ProfileComponents/ProfileSettings';
+import ProfileMenu from '../components/ProfileComponents/ProfileMenu';
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);

@@ -10,6 +10,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import MapScreen from '../screens/MapScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import AddVehicleScreen from '../screens/AddVehicleScreen';
+import ImageUploadScreen from '../screens/ImageUploadScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AddVehicle" component={AddVehicleScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ImageUpload" component={ImageUploadScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

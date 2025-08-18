@@ -7,9 +7,15 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import useLocation from '../hooks/useLocation';
+import CustomAlert from '../components/CustomAlert';
+import { useAlert } from '../hooks/useAlert';
+import { registerVehicle } from '../api/vehicleService';
+import { getUserData } from '../utils/storage';
 
 export default function AddVehicleScreen({ navigation }: { navigation: any }) {
   const [brand, setBrand] = useState('');
@@ -18,43 +24,121 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
   const [licensePlate, setLicensePlate] = useState('');
   const [year, setYear] = useState('');
   const [color, setColor] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [submitVehicleLoading, setSubmitVehicleLoading] = useState(false);
+  const { location, loading, errorMsg } = useLocation();
+  const { alertConfig, visible, hideAlert, showError, showSuccess } = useAlert();
 
   const vehicleTypes = ['Bike', 'Scooter', 'Car'];
 
   const handleSubmit = async () => {
-    if (!brand || !model || !vehicleType) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!brand || !model || !vehicleType || !licensePlate || !year || !color) {
+      showError('Missing Information', 'Please fill in all required fields to continue.');
       return;
     }
 
-    setLoading(true);
+    if (!location) {
+      showError('Location Required', 'Location is required to register your vehicle. Please enable GPS and try again.');
+      return;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const vehicleYear = parseInt(year);
+    if (vehicleYear < 1900 || vehicleYear > currentYear + 1) {
+      showError('Invalid Year', 'Please enter a valid manufacturing year for your vehicle.');
+      return;
+    }
+
+    setSubmitVehicleLoading(true);
     try {
-      // Add vehicle API call here
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-      Alert.alert('Success', 'Vehicle added successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      const userData = await getUserData();
+      if (!userData?.id) {
+        showError('Authentication Error', 'Please log in again to register your vehicle.');
+        return;
+      }
+
+      const vehicleData = {
+        brand,
+        model,
+        vehicle_type: vehicleType,
+        license_plate: licensePlate.toUpperCase(),
+        year: vehicleYear,
+        color,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      };
+
+      const response = await registerVehicle(vehicleData, userData.id);
+      console.log('Vehicle registered:', response);
+      
+      showSuccess(
+        'Vehicle Registered!', 
+        'Your vehicle has been registered successfully. Next, add photos to complete the setup.',
+        [
+          { 
+            text: 'Add Photos', 
+            onPress: () => {
+              navigation.navigate('ImageUpload', { vehicleId: response.id });
+            }
+          },
+          { 
+            text: 'Skip for Now', 
+            style: 'cancel',
+            onPress: () => navigation.goBack()
+          }
+        ]
+      );
     } catch (error) {
-      Alert.alert('Error', 'Failed to add vehicle. Please try again.');
+      showError('Registration Failed', 'Failed to register your vehicle. Please check your connection and try again.');
     } finally {
-      setLoading(false);
+      setSubmitVehicleLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backIcon}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Vehicle</Text>
+          <Text style={styles.headerTitle}>Register Vehicle</Text>
           <View style={styles.placeholder} />
         </View>
 
         <View style={styles.content}>
+          {/* Progress Indicator */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressStep}>
+              <View style={styles.progressStepActive}>
+                <Text style={styles.progressStepText}>1</Text>
+              </View>
+              <Text style={styles.progressLabel}>Basic Info</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.progressStep}>
+              <View style={styles.progressStepInactive}>
+                <Text style={styles.progressStepTextInactive}>2</Text>
+              </View>
+              <Text style={styles.progressLabel}>Photos</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.progressStep}>
+              <View style={styles.progressStepInactive}>
+                <Text style={styles.progressStepTextInactive}>3</Text>
+              </View>
+              <Text style={styles.progressLabel}>Pricing</Text>
+            </View>
+          </View>
+
           {/* Vehicle Type Selection */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Vehicle Type *</Text>
@@ -98,7 +182,7 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>License Plate</Text>
+              <Text style={styles.label}>License Plate *</Text>
               <TextInput
                 style={styles.input}
                 placeholder="e.g., KA-01-AB-1234"
@@ -110,7 +194,7 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
 
             <View style={styles.row}>
               <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.label}>Year</Text>
+                <Text style={styles.label}>Year *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="2023"
@@ -122,7 +206,7 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
               </View>
 
               <View style={[styles.inputContainer, styles.halfWidth]}>
-                <Text style={styles.label}>Color</Text>
+                <Text style={styles.label}>Color *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Red, Blue, Black"
@@ -133,30 +217,48 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
             </View>
           </View>
 
-          {/* Photo Upload Section */}
+          {/* Location Info */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Vehicle Photos</Text>
-            <TouchableOpacity style={styles.photoUpload}>
-              <Text style={styles.photoIcon}>📷</Text>
-              <Text style={styles.photoText}>Add Photos</Text>
-              <Text style={styles.photoSubtext}>Upload vehicle images</Text>
-            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>Location</Text>
+            <View style={styles.locationInfo}>
+              <Text style={styles.locationIcon}>📍</Text>
+              <View>
+                <Text style={styles.locationText}>
+                  {location ? 'Current location captured' : 'Getting location...'}
+                </Text>
+                <Text style={styles.locationSubtext}>
+                  Vehicle will be registered at your current location
+                </Text>
+              </View>
+            </View>
           </View>
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            style={[styles.submitButton, submitVehicleLoading && styles.submitButtonDisabled]}
             onPress={handleSubmit}
-            disabled={loading}
+            disabled={submitVehicleLoading}
           >
-            {loading ? (
+            {submitVehicleLoading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
-              <Text style={styles.submitButtonText}>Add Vehicle</Text>
+              <Text style={styles.submitButtonText}>Register Vehicle</Text>
             )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      
+      {alertConfig && (
+        <CustomAlert
+          visible={visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          type={alertConfig.type}
+          onClose={hideAlert}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -188,6 +290,13 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 24,
+  },
+  keyboardAvoid: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 50,
   },
   content: {
     padding: 20,
@@ -252,27 +361,74 @@ const styles = StyleSheet.create({
   halfWidth: {
     flex: 1,
   },
-  photoUpload: {
-    backgroundColor: '#fff',
-    paddingVertical: 40,
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
     paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#e1e5e9',
-    borderStyle: 'dashed',
+  },
+  progressStep: {
     alignItems: 'center',
   },
-  photoIcon: {
-    fontSize: 32,
+  progressStepActive: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
   },
-  photoText: {
-    fontSize: 16,
+  progressStepInactive: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e1e5e9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  progressStepText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  progressStepTextInactive: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  progressLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  progressLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#e1e5e9',
+    marginHorizontal: 10,
+  },
+  locationInfo: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  locationText: {
+    fontSize: 14,
     fontWeight: '500',
     color: '#333',
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  photoSubtext: {
+  locationSubtext: {
     fontSize: 12,
     color: '#666',
   },

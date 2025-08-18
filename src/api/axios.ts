@@ -1,7 +1,8 @@
 import axios from 'axios';
+import Config from 'react-native-config';
 
 const api = axios.create({
-  baseURL: 'https://24ad00acaeec.ngrok-free.app', // Android emulator maps this to host localhost
+  baseURL: Config.API_BASE_URL || 'http://localhost:8000',
   timeout: 10000,
 });
 
