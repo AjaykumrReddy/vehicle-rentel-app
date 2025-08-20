@@ -70,6 +70,10 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
     navigation.navigate('AddVehicle');
   };
 
+  const onVehicleDeleted = (deletedVehicleId: string) =>{
+    setUserVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.id !== deletedVehicleId));
+  }
+
   if (!userData) {
     return (
       <View style={styles.loadingContainer}>
@@ -87,7 +91,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
           onBack={() => navigation.goBack()}
         />
         
-        <MyVehiclesSection vehicles={userVehicles} onAddVehicle={handleAddVehicle} />
+        <MyVehiclesSection vehicles={userVehicles} onAddVehicle={handleAddVehicle} onVehicleDeleted={onVehicleDeleted} navigation={navigation}/>
         
         <ProfileSettings 
           notificationsEnabled={notificationsEnabled}

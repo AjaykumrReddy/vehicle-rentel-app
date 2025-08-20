@@ -104,3 +104,18 @@ export const uploadVehiclePhotos = async (vehicleId: string, files: any[]) => {
     throw error;
   }
 };
+
+// Delete a vehicle
+export const deleteVehicle = async (vehicleId: string) => {
+  try {
+    const token = await getAuthToken();
+    const response = await api.delete(`/vehicles/${vehicleId}`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    console.log('Delete vehicle response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Delete vehicle error:', error);
+    throw error;
+  }
+};
