@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 
 export default function AvailabilitySetupScreen({ navigation, route }: { navigation: any, route: any }) {
-  const { vehicleId } = route.params;
+  // const { vehicleId } = route?.params;
+  const vehicleId = route?.params?.vehicleId;
   const [hourlyRate, setHourlyRate] = useState('');
   const [dailyRate, setDailyRate] = useState('');
   const [loading, setLoading] = useState(false);

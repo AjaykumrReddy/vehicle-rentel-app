@@ -6,24 +6,66 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadVehiclePhotos } from '../api/vehicleService';
+import CustomAlert from '../components/CustomAlert';
+import { useAlert } from '../hooks/useAlert';
+
 
 export default function ImageUploadScreen({ navigation, route }: { navigation: any, route: any }) {
   const { vehicleId } = route.params;
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
 
-  const handleImagePicker = () => {
-    // Placeholder for image picker implementation
-    Alert.alert('Image Picker', 'Image picker will be implemented here');
+  const handleImagePicker = async () => {
+    if (images.length >= 6) {
+      showError('Maximum Photos', 'You can only add up to 6 photos.');
+      return;
+    }
+
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        showError('Permission Required', 'Permission to access camera roll is required!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const newImage = {
+          uri: asset.uri,
+          type: 'image/jpeg',
+          name: `vehicle_photo_${Date.now()}.jpg`,
+        };
+        setImages([...images, newImage]);
+      }
+    } catch (error) {
+      console.log('ImagePicker Error: ', error);
+      showError('Image Picker Error', 'Failed to open gallery. Please try again.');
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
   };
 
   const handleSubmit = async () => {
     if (images.length === 0) {
-      Alert.alert('No Images', 'Would you like to skip adding photos for now?', [
+      showWarning('No Images', 'Would you like to skip adding photos for now?', [
         { text: 'Skip', onPress: () => navigation.navigate('AvailabilitySetup', { vehicleId }) },
         { text: 'Add Photos', style: 'cancel' }
       ]);
@@ -32,16 +74,16 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
 
     setLoading(true);
     try {
-      // Upload images API call here
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await uploadVehiclePhotos(vehicleId, images);
       
-      Alert.alert(
+      showSuccess(
         'Photos Uploaded!',
         'Vehicle photos uploaded successfully. Next, set up availability and pricing.',
         [{ text: 'Continue', onPress: () => navigation.navigate('AvailabilitySetup', { vehicleId }) }]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to upload photos. Please try again.');
+      console.error('Upload error:', error);
+      showError('Upload Failed', 'Failed to upload photos. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -94,25 +136,37 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
             </Text>
           </View>
 
-          {/* Photo Upload Grid */}
-          <View style={styles.photoGrid}>
-            {[...Array(6)].map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.photoSlot}
-                onPress={handleImagePicker}
-              >
-                {images[index] ? (
-                  <Image source={{ uri: images[index] }} style={styles.photoImage} />
-                ) : (
-                  <View style={styles.photoPlaceholder}>
-                    <Text style={styles.photoIcon}>📷</Text>
-                    <Text style={styles.photoText}>Add Photo</Text>
+          {/* Add Photo Button */}
+          {images.length < 6 && (
+            <TouchableOpacity 
+              style={styles.addPhotoButton}
+              onPress={handleImagePicker}
+            >
+              <Text style={styles.addPhotoIcon}>📷</Text>
+              <Text style={styles.addPhotoText}>Add Vehicle Photo</Text>
+              <Text style={styles.addPhotoSubtext}>{images.length}/6 photos added</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Selected Photos */}
+          {images.length > 0 && (
+            <View style={styles.photosSection}>
+              <Text style={styles.photosTitle}>Selected Photos ({images.length})</Text>
+              <View style={styles.photosList}>
+                {images.map((image, index) => (
+                  <View key={index} style={styles.photoItem}>
+                    <Image source={{ uri: image.uri }} style={styles.photoThumbnail} />
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <Text style={styles.removeButtonText}>×</Text>
+                    </TouchableOpacity>
                   </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+                ))}
+              </View>
+            </View>
+          )}
 
           {/* Submit Button */}
           <TouchableOpacity 
@@ -130,6 +184,17 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {alertConfig && (
+        <CustomAlert
+          visible={visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          type={alertConfig.type}
+          onClose={hideAlert}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -294,5 +359,70 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  addPhotoButton: {
+    backgroundColor: '#fff',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  addPhotoIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  addPhotoText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 4,
+  },
+  addPhotoSubtext: {
+    fontSize: 14,
+    color: '#666',
+  },
+  photosSection: {
+    marginBottom: 30,
+  },
+  photosTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 16,
+  },
+  photosList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  photoItem: {
+    position: 'relative',
+    width: '48%',
+    aspectRatio: 1.5,
+  },
+  photoThumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  removeButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

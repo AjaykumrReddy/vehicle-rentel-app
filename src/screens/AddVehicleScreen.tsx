@@ -77,7 +77,7 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
           { 
             text: 'Add Photos', 
             onPress: () => {
-              navigation.navigate('ImageUpload', { vehicleId: response.id });
+              navigation.navigate('ImageUpload', { vehicleId: response.vehicle_id });
             }
           },
           { 
@@ -87,8 +87,13 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
           }
         ]
       );
-    } catch (error) {
-      showError('Registration Failed', 'Failed to register your vehicle. Please check your connection and try again.');
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 
+                     (error.code === 'NETWORK_ERROR' || !error.response 
+                      ? 'Please check your internet connection and try again.' 
+                      : 'Failed to register your vehicle. Please try again.');
+      
+      showError('Registration Failed', message);
     } finally {
       setSubmitVehicleLoading(false);
     }
