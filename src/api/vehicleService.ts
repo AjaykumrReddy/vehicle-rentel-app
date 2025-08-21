@@ -119,3 +119,18 @@ export const deleteVehicle = async (vehicleId: string) => {
     throw error;
   }
 };
+
+// Set Vehicle Avilability slots
+export const setVehicleAvailabilitySlots = async (vehicleId: string,payload: any ) => {
+  try {
+    const token = await getAuthToken();
+    const response = await api.post(`/vehicles/${vehicleId}/availability_slots`, payload, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    console.log('Set vehicle availability slots response:', vehicleId);
+    return response.data;
+  } catch (error) {
+    console.error('Set vehicle availability slots error:', error);
+    throw error;
+  }
+}

@@ -8,8 +8,14 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { setVehicleAvailabilitySlots } from '../api/vehicleService';
+import { useAlert } from '../hooks/useAlert';
+import CustomAlert from '../components/CustomAlert';
+
 
 interface TimeSlot {
   start_datetime: string;
@@ -28,6 +34,7 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
   const [pickerMode, setPickerMode] = useState<'start' | 'end'>('start');
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [tempDate, setTempDate] = useState(new Date());
+  const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
 
   const addNewSlot = () => {
     const now = new Date();
@@ -92,7 +99,7 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const saveAvailability = () => {
+  const saveAvailability = async () => {
     if (slots.length === 0) {
       Alert.alert('No Slots', 'Please add at least one availability slot.');
       return;
@@ -109,13 +116,33 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
     const payload = { slots };
     console.log('Saving availability:', payload);
     // API call would go here
-    Alert.alert('Success', 'Vehicle availability updated!', [
-      { text: 'OK', onPress: () => navigation.goBack() }
-    ]);
+    try{
+      await setVehicleAvailabilitySlots(selectedVehicle.id, payload);
+      showSuccess(
+        'Availability Saved', 
+        'Your vehicle availability has been updated successfully.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    }catch(error: any){
+      const message = error.response?.data?.detail ||
+        (error.code === 'NETWORK_ERROR' || !error.response
+          ? 'Please check your internet connection and try again.'
+          : 'Failed to save availability. Please try again.');
+      showError('Save Failed', message);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {alertConfig && (
+        <CustomAlert
+          visible={visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          onClose={hideAlert}
+        />
+      )}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backIcon}>←</Text>
@@ -126,7 +153,15 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView 
+          style={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <Text style={styles.subtitle}>Configure when your vehicle is available for rent</Text>
 
         {slots.map((slot, index) => (
@@ -215,7 +250,8 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
         <TouchableOpacity style={styles.addSlotButton} onPress={addNewSlot}>
           <Text style={styles.addSlotText}>+ Add Time Slot</Text>
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {showDatePicker && (
         <DateTimePicker
@@ -244,6 +280,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
+  keyboardAvoid: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -253,6 +292,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    paddingTop: 50,
   },
   backIcon: {
     fontSize: 24,
@@ -367,6 +407,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
+    marginBottom:50,
   },
   addSlotText: {
     color: '#fff',
