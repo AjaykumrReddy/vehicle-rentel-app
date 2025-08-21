@@ -10,8 +10,10 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function AvailabilitySetupScreen({ navigation, route }: { navigation: any, route: any }) {
+  const { colors } = useTheme();
   // const { vehicleId } = route?.params;
   const vehicleId = route?.params?.vehicleId;
   const [hourlyRate, setHourlyRate] = useState('');
@@ -60,16 +62,16 @@ export default function AvailabilitySetupScreen({ navigation, route }: { navigat
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>←</Text>
+            <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Set Pricing</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Set Pricing</Text>
           <TouchableOpacity onPress={handleSkip}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={[styles.skipText, { color: colors.primary }]}>Skip</Text>
           </TouchableOpacity>
         </View>
 
@@ -80,28 +82,28 @@ export default function AvailabilitySetupScreen({ navigation, route }: { navigat
               <View style={styles.progressStepComplete}>
                 <Text style={styles.progressStepText}>✓</Text>
               </View>
-              <Text style={styles.progressLabel}>Basic Info</Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Basic Info</Text>
             </View>
             <View style={styles.progressLineComplete} />
             <View style={styles.progressStep}>
               <View style={styles.progressStepComplete}>
                 <Text style={styles.progressStepText}>✓</Text>
               </View>
-              <Text style={styles.progressLabel}>Photos</Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Photos</Text>
             </View>
             <View style={styles.progressLineComplete} />
             <View style={styles.progressStep}>
               <View style={styles.progressStepActive}>
                 <Text style={styles.progressStepText}>3</Text>
               </View>
-              <Text style={styles.progressLabel}>Pricing</Text>
+              <Text style={[styles.progressLabel, { color: colors.text }]}>Pricing</Text>
             </View>
           </View>
 
           {/* Instructions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Set Your Rates</Text>
-            <Text style={styles.instructions}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Set Your Rates</Text>
+            <Text style={[styles.instructions, { color: colors.textSecondary }]}>
               Set competitive rates for your vehicle. You can always update these later.
             </Text>
           </View>
@@ -109,42 +111,48 @@ export default function AvailabilitySetupScreen({ navigation, route }: { navigat
           {/* Pricing Options */}
           <View style={styles.section}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Hourly Rate (₹)</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Hourly Rate (₹)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
                 placeholder="e.g., 50"
+                placeholderTextColor={colors.textSecondary}
                 value={hourlyRate}
                 onChangeText={setHourlyRate}
                 keyboardType="numeric"
               />
-              <Text style={styles.inputHint}>Recommended: ₹30-80 per hour</Text>
+              <Text style={[styles.inputHint, { color: colors.textSecondary }]}>Recommended: ₹30-80 per hour</Text>
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Daily Rate (₹)</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Daily Rate (₹)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
                 placeholder="e.g., 500"
+                placeholderTextColor={colors.textSecondary}
                 value={dailyRate}
                 onChangeText={setDailyRate}
                 keyboardType="numeric"
               />
-              <Text style={styles.inputHint}>Recommended: ₹400-1200 per day</Text>
+              <Text style={[styles.inputHint, { color: colors.textSecondary }]}>Recommended: ₹400-1200 per day</Text>
             </View>
           </View>
 
           {/* Features Info */}
-          <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>What happens next?</Text>
-            <Text style={styles.infoText}>• Your vehicle will be reviewed within 24 hours</Text>
-            <Text style={styles.infoText}>• You'll receive a notification once approved</Text>
-            <Text style={styles.infoText}>• Start earning from rentals immediately</Text>
-            <Text style={styles.infoText}>• Manage availability anytime from your profile</Text>
+          <View style={[styles.infoBox, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <Text style={[styles.infoTitle, { color: colors.primary }]}>What happens next?</Text>
+            <Text style={[styles.infoText, { color: colors.text }]}>• Your vehicle will be reviewed within 24 hours</Text>
+            <Text style={[styles.infoText, { color: colors.text }]}>• You'll receive a notification once approved</Text>
+            <Text style={[styles.infoText, { color: colors.text }]}>• Start earning from rentals immediately</Text>
+            <Text style={[styles.infoText, { color: colors.text }]}>• Manage availability anytime from your profile</Text>
           </View>
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton, 
+              { backgroundColor: colors.primary },
+              loading && { opacity: 0.6 }
+            ]}
             onPress={handleSubmit}
             disabled={loading}
           >

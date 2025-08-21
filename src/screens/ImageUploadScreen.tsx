@@ -14,9 +14,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadVehiclePhotos } from '../api/vehicleService';
 import CustomAlert from '../components/CustomAlert';
 import { useAlert } from '../hooks/useAlert';
+import { useTheme } from '../contexts/ThemeContext';
 
 
 export default function ImageUploadScreen({ navigation, route }: { navigation: any, route: any }) {
+  const { colors } = useTheme();
   const { vehicleId } = route.params;
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,16 +92,16 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>←</Text>
+            <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Photos</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Add Photos</Text>
           <TouchableOpacity onPress={() => navigation.navigate('AvailabilitySetup', { vehicleId })}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={[styles.skipText, { color: colors.primary }]}>Skip</Text>
           </TouchableOpacity>
         </View>
 
@@ -110,28 +112,28 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
               <View style={styles.progressStepComplete}>
                 <Text style={styles.progressStepText}>✓</Text>
               </View>
-              <Text style={styles.progressLabel}>Basic Info</Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Basic Info</Text>
             </View>
             <View style={styles.progressLineComplete} />
             <View style={styles.progressStep}>
               <View style={styles.progressStepActive}>
                 <Text style={styles.progressStepText}>2</Text>
               </View>
-              <Text style={styles.progressLabel}>Photos</Text>
+              <Text style={[styles.progressLabel, { color: colors.text }]}>Photos</Text>
             </View>
             <View style={styles.progressLine} />
             <View style={styles.progressStep}>
               <View style={styles.progressStepInactive}>
                 <Text style={styles.progressStepTextInactive}>3</Text>
               </View>
-              <Text style={styles.progressLabel}>Pricing</Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Pricing</Text>
             </View>
           </View>
 
           {/* Instructions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Vehicle Photos</Text>
-            <Text style={styles.instructions}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Vehicle Photos</Text>
+            <Text style={[styles.instructions, { color: colors.textSecondary }]}>
               Add clear photos of your vehicle to attract more renters. Include front, back, and side views.
             </Text>
           </View>
@@ -139,19 +141,19 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
           {/* Add Photo Button */}
           {images.length < 6 && (
             <TouchableOpacity 
-              style={styles.addPhotoButton}
+              style={[styles.addPhotoButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={handleImagePicker}
             >
               <Text style={styles.addPhotoIcon}>📷</Text>
-              <Text style={styles.addPhotoText}>Add Vehicle Photo</Text>
-              <Text style={styles.addPhotoSubtext}>{images.length}/6 photos added</Text>
+              <Text style={[styles.addPhotoText, { color: colors.text }]}>Add Vehicle Photo</Text>
+              <Text style={[styles.addPhotoSubtext, { color: colors.textSecondary }]}>{images.length}/6 photos added</Text>
             </TouchableOpacity>
           )}
 
           {/* Selected Photos */}
           {images.length > 0 && (
             <View style={styles.photosSection}>
-              <Text style={styles.photosTitle}>Selected Photos ({images.length})</Text>
+              <Text style={[styles.photosTitle, { color: colors.text }]}>Selected Photos ({images.length})</Text>
               <View style={styles.photosList}>
                 {images.map((image, index) => (
                   <View key={index} style={styles.photoItem}>
@@ -170,7 +172,11 @@ export default function ImageUploadScreen({ navigation, route }: { navigation: a
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton, 
+              { backgroundColor: colors.primary },
+              loading && { opacity: 0.6 }
+            ]}
             onPress={handleSubmit}
             disabled={loading}
           >

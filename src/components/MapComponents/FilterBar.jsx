@@ -1,7 +1,9 @@
 import React from 'react';
 import { Animated, ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function FilterBar({ bottomSheetAnim, BOTTOM_SHEET_MIN_HEIGHT, BOTTOM_SHEET_MAX_HEIGHT, filterType, setFilterType }) {
+  const { colors } = useTheme();
   return (
     <Animated.View style={[
       styles.filterBar,
@@ -17,10 +19,18 @@ export default function FilterBar({ bottomSheetAnim, BOTTOM_SHEET_MIN_HEIGHT, BO
         {['All', 'Bikes', 'Scooters','Cars'].map((type) => (
           <TouchableOpacity
             key={type}
-            style={[styles.filterChip, filterType === type && styles.filterChipActive]}
+            style={[
+              styles.filterChip, 
+              { backgroundColor: colors.surface },
+              filterType === type && { backgroundColor: colors.primary }
+            ]}
             onPress={() => setFilterType(type)}
           >
-            <Text style={[styles.filterText, filterType === type && styles.filterTextActive]}>
+            <Text style={[
+              styles.filterText, 
+              { color: colors.text },
+              filterType === type && { color: '#fff' }
+            ]}>
               {type}
             </Text>
           </TouchableOpacity>

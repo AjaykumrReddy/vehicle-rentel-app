@@ -1,7 +1,9 @@
 import React from 'react';
 import { Animated, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function FloatingButtons({ bottomSheetAnim, BOTTOM_SHEET_MIN_HEIGHT, BOTTOM_SHEET_MAX_HEIGHT, onLocationPress, onRefresh }) {
+  const { colors } = useTheme();
   return (
     <Animated.View style={[
       styles.fabContainer,
@@ -13,10 +15,10 @@ export default function FloatingButtons({ bottomSheetAnim, BOTTOM_SHEET_MIN_HEIG
         })
       }
     ]}>
-      <TouchableOpacity style={styles.fab} onPress={onLocationPress}>
+      <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface }]} onPress={onLocationPress}>
         <Text style={styles.fabIcon}>📍</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.fab} onPress={onRefresh}>
+      <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface }]} onPress={onRefresh}>
         <Text style={styles.fabIcon}>🔄</Text>
       </TouchableOpacity>
     </Animated.View>

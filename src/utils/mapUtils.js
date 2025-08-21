@@ -37,7 +37,7 @@ export const filterVehicles = (vehicles, filterType) => {
     const vehicleType = vehicle.vehicle_type.toLowerCase();
     if (type === 'bikes') return vehicleType.includes('bike');
     if (type === 'scooters') return vehicleType.includes('scooter');
-    if (type === 'car') return vehicleType.includes('car');
+    if (type === 'cars') return vehicleType.includes('car');
     return false;
   });
 };

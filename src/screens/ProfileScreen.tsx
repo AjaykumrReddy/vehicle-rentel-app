@@ -13,9 +13,11 @@ import api from '../api/axios';
 import ProfileHeader from '../components/ProfileComponents/ProfileHeader';
 import MyVehiclesSection from '../components/ProfileComponents/MyVehiclesSection';
 import ProfileSettings from '../components/ProfileComponents/ProfileSettings';
+import { useTheme } from '../contexts/ThemeContext';
 import ProfileMenu from '../components/ProfileComponents/ProfileMenu';
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
+  const { colors } = useTheme();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -76,14 +78,14 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
 
   if (!userData) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <ProfileHeader 
           userData={userData} 

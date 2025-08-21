@@ -16,12 +16,14 @@ import FloatingButtons from '../components/MapComponents/FloatingButtons';
 import FilterBar from '../components/MapComponents/FilterBar';
 import VehicleBottomSheet from '../components/MapComponents/VehicleBottomSheet';
 import { parsePoint, getVehicleIcon, getMarkerColor, filterVehicles } from '../utils/mapUtils';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BOTTOM_SHEET_MIN_HEIGHT = 120;
 const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.5;
 
 export default function MapScreen({ navigation }) {
+  const { colors } = useTheme();
   const { location, loading, errorMsg } = useLocation();
   const [vehicles, setVehicles] = useState([]);
   const [fetchingVehicles, setFetchingVehicles] = useState(false);
@@ -169,17 +171,17 @@ export default function MapScreen({ navigation }) {
 
   if (loading || !location) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text>Fetching location...</Text>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ color: colors.text }}>Fetching location...</Text>
       </View>
     );
   }
 
   if (errorMsg || !location) {
     return (
-      <View style={styles.center}>
-        <Text style={{ color: 'red' }}>{errorMsg || 'Location not available'}</Text>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.error }}>{errorMsg || 'Location not available'}</Text>
       </View>
     );
   }

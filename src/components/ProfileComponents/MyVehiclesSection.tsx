@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Modal } from 'react-na
 import CustomAlert from '../CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { deleteVehicle } from '../../api/vehicleService';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface MyVehiclesSectionProps {
   vehicles: any[];
@@ -12,6 +13,7 @@ interface MyVehiclesSectionProps {
 }
 
 export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDeleted, navigation }: MyVehiclesSectionProps) {
+  const { colors } = useTheme();
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [isVehicleDeleting, setIsVehicleDeleting] = useState(false);
@@ -86,17 +88,17 @@ export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDel
   if (vehicles.length === 0) return null;
 
   return (
-    <View style={styles.vehiclesSection}>
+    <View style={[styles.vehiclesSection, { backgroundColor: colors.surface }]}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>My Vehicles</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>My Vehicles</Text>
         <TouchableOpacity onPress={onAddVehicle}>
-          <Text style={styles.addVehicleText}>+ Add Vehicle</Text>
+          <Text style={[styles.addVehicleText, { color: colors.primary }]}>+ Add Vehicle</Text>
         </TouchableOpacity>
       </View>
       {vehicles.map((vehicle) => {
         const primaryPhoto = getPrimaryPhoto(vehicle.photos);
         return (
-          <View key={vehicle.id} style={styles.vehicleItem}>
+          <View key={vehicle.id} style={[styles.vehicleItem, { borderBottomColor: colors.border }]}>
             <View style={styles.vehicleImageContainer}>
               {primaryPhoto ? (
                 <Image source={{ uri: primaryPhoto }} style={styles.vehicleImage} />
@@ -107,17 +109,17 @@ export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDel
               )}
             </View>
             <View style={styles.vehicleDetails}>
-              <Text style={styles.vehicleName}>{vehicle.brand} {vehicle.model}</Text>
-              <Text style={styles.vehicleLocation}>
+              <Text style={[styles.vehicleName, { color: colors.text }]}>{vehicle.brand} {vehicle.model}</Text>
+              <Text style={[styles.vehicleLocation, { color: colors.textSecondary }]}>
                 📍 {vehicle.latitude.toFixed(4)}, {vehicle.longitude.toFixed(4)}
               </Text>
               <View style={styles.vehicleStatusContainer}>
                 <View style={[styles.statusDot, { backgroundColor: vehicle.available ? '#00C851' : '#ff4444' }]} />
-                <Text style={styles.vehicleStatus}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
+                <Text style={[styles.vehicleStatus, { color: colors.textSecondary }]}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.vehicleMenu} onPress={() => handleMenuPress(vehicle)}>
-              <Text style={styles.menuDots}>⋮</Text>
+              <Text style={[styles.menuDots, { color: colors.textSecondary }]}>⋮</Text>
             </TouchableOpacity>
           </View>
         );
@@ -134,18 +136,18 @@ export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDel
           activeOpacity={1}
           onPress={() => setShowMenu(false)}
         >
-          <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuOption('updatePhotos')}>
-              <Text style={styles.menuText}>📷 Update Photos</Text>
+          <View style={[styles.menuContainer, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => handleMenuOption('updatePhotos')}>
+              <Text style={[styles.menuText, { color: colors.text }]}>📷 Update Photos</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuOption('SetVehicleAvailability')}>
-              <Text style={styles.menuText}>🔄 Set Availability</Text>
+            <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => handleMenuOption('SetVehicleAvailability')}>
+              <Text style={[styles.menuText, { color: colors.text }]}>🔄 Set Availability</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuOption('EditVehicleDetails')}>
-              <Text style={styles.menuText}>✏️ Edit Details</Text>
+            <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => handleMenuOption('EditVehicleDetails')}>
+              <Text style={[styles.menuText, { color: colors.text }]}>✏️ Edit Details</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => handleDeleteVehicle()}>
-              <Text style={[styles.menuText, styles.deleteText]}>🗑️ Delete Vehicle</Text>
+            <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => handleDeleteVehicle()}>
+              <Text style={[styles.menuText, { color: colors.error }]}>🗑️ Delete Vehicle</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

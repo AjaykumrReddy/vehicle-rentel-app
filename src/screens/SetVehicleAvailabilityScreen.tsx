@@ -15,6 +15,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { setVehicleAvailabilitySlots } from '../api/vehicleService';
 import { useAlert } from '../hooks/useAlert';
 import CustomAlert from '../components/CustomAlert';
+import { useTheme } from '../contexts/ThemeContext';
 
 
 interface TimeSlot {
@@ -27,6 +28,7 @@ interface TimeSlot {
 }
 
 export default function SetVehicleAvailabilityScreen({ navigation, route }: any) {
+  const { colors } = useTheme();
   const { selectedVehicle } = route.params;
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -133,7 +135,7 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {alertConfig && (
         <CustomAlert
           visible={visible}

@@ -2,8 +2,10 @@ import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { calculateDistance } from '../../utils/mapUtils';
 import { parsePoint } from '../../utils/mapUtils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function VehicleCard({ vehicle, onPress, userLocation }) {
+  const { colors } = useTheme();
   const getVehicleIcon = (vehicle) => {
     const type = vehicle.vehicle_type.toLowerCase();
     if (type.includes('bike')) return '🏍️';
@@ -49,21 +51,21 @@ export default function VehicleCard({ vehicle, onPress, userLocation }) {
   const { distance, walkTime } = getDistanceInfo();
 
   return (
-    <TouchableOpacity style={styles.vehicleCard} onPress={onPress}>
-      <View style={styles.vehicleIcon}>
+    <TouchableOpacity style={[styles.vehicleCard, { borderBottomColor: colors.border }]} onPress={onPress}>
+      <View style={[styles.vehicleIcon, { backgroundColor: colors.background }]}>
         <Text style={styles.vehicleEmoji}>{getVehicleIcon(vehicle)}</Text>
       </View>
       <View style={styles.vehicleInfo}>
-        <Text style={styles.vehicleName}>{vehicle.brand} {vehicle.model}</Text>
-        <Text style={styles.vehicleDistance}>{distance} away • {walkTime}</Text>
+        <Text style={[styles.vehicleName, { color: colors.text }]}>{vehicle.brand} {vehicle.model}</Text>
+        <Text style={[styles.vehicleDistance, { color: colors.textSecondary }]}>{distance} away • {walkTime}</Text>
         <View style={styles.vehicleStatus}>
           <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
-          <Text style={styles.statusText}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
+          <Text style={[styles.statusText, { color: colors.textSecondary }]}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
         </View>
       </View>
       <View style={styles.vehiclePrice}>
-        <Text style={styles.priceText}>₹50/hr</Text>
-        <TouchableOpacity style={styles.bookButton}>
+        <Text style={[styles.priceText, { color: colors.text }]}>₹50/hr</Text>
+        <TouchableOpacity style={[styles.bookButton, { backgroundColor: colors.primary }]}>
           <Text style={styles.bookButtonText}>Book</Text>
         </TouchableOpacity>
       </View>

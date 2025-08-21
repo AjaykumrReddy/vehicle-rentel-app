@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ProfileHeaderProps {
   userData: any;
@@ -8,6 +9,7 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ userData, vehicleCount, onBack }: ProfileHeaderProps) {
+  const { colors } = useTheme();
   const getInitials = (name: string) => {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
   };
@@ -19,18 +21,18 @@ export default function ProfileHeader({ userData, vehicleCount, onBack }: Profil
   return (
     <>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backIcon}>←</Text>
+          <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
         <TouchableOpacity>
           <Text style={styles.editIcon}>✏️</Text>
         </TouchableOpacity>
       </View>
 
       {/* Profile Info */}
-      <View style={styles.profileSection}>
+      <View style={[styles.profileSection, { backgroundColor: colors.surface }]}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{getInitials(userData.full_name)}</Text>
@@ -40,24 +42,24 @@ export default function ProfileHeader({ userData, vehicleCount, onBack }: Profil
           </TouchableOpacity>
         </View>
         
-        <Text style={styles.userName}>{userData.full_name || 'User'}</Text>
-        <Text style={styles.userPhone}>{formatPhoneNumber(userData.phone_number)}</Text>
-        <Text style={styles.userEmail}>{userData.email || 'No email provided'}</Text>
+        <Text style={[styles.userName, { color: colors.text }]}>{userData.full_name || 'User'}</Text>
+        <Text style={[styles.userPhone, { color: colors.textSecondary }]}>{formatPhoneNumber(userData.phone_number)}</Text>
+        <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{userData.email || 'No email provided'}</Text>
         
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{vehicleCount}</Text>
-            <Text style={styles.statLabel}>My Vehicles</Text>
+            <Text style={[styles.statNumber, { color: colors.text }]}>{vehicleCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>My Vehicles</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>5.0</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={[styles.statNumber, { color: colors.text }]}>5.0</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Rating</Text>
           </View>
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>₹2,450</Text>
-            <Text style={styles.statLabel}>Saved</Text>
+            <Text style={[styles.statNumber, { color: colors.text }]}>₹2,450</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Saved</Text>
           </View>
         </View>
       </View>

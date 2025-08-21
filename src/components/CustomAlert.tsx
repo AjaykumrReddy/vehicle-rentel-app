@@ -7,6 +7,7 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface AlertButton {
   text: string;
@@ -33,6 +34,7 @@ export default function CustomAlert({
   onClose,
   type = 'info'
 }: CustomAlertProps) {
+  const { colors } = useTheme();
   const getIcon = () => {
     switch (type) {
       case 'success': return '✅';
@@ -59,13 +61,13 @@ export default function CustomAlert({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.alertContainer}>
+        <View style={[styles.alertContainer, { backgroundColor: colors.surface }]}>
           <View style={[styles.iconContainer, { backgroundColor: getIconColor() + '20' }]}>
             <Text style={styles.icon}>{getIcon()}</Text>
           </View>
           
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.message, { color: colors.textSecondary }]}>{message}</Text>
           
           <View style={styles.buttonContainer}>
             {buttons.map((button, index) => (
@@ -73,8 +75,9 @@ export default function CustomAlert({
                 key={index}
                 style={[
                   styles.button,
-                  button.style === 'cancel' && styles.cancelButton,
-                  button.style === 'destructive' && styles.destructiveButton,
+                  { backgroundColor: colors.primary },
+                  button.style === 'cancel' && { backgroundColor: colors.background, borderColor: colors.border },
+                  button.style === 'destructive' && { backgroundColor: colors.error },
                   buttons.length === 1 && styles.singleButton
                 ]}
                 onPress={() => {
@@ -84,7 +87,7 @@ export default function CustomAlert({
               >
                 <Text style={[
                   styles.buttonText,
-                  button.style === 'cancel' && styles.cancelButtonText,
+                  button.style === 'cancel' && { color: colors.text },
                   button.style === 'destructive' && styles.destructiveButtonText
                 ]}>
                   {button.text}

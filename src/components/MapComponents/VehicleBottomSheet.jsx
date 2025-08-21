@@ -1,6 +1,7 @@
 import React from 'react';
 import { Animated, View, Text, TouchableOpacity, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import VehicleCard from './VehicleCard';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function VehicleBottomSheet({ 
   bottomSheetAnim, 
@@ -14,6 +15,7 @@ export default function VehicleBottomSheet({
   BOTTOM_SHEET_MAX_HEIGHT,
   userLocation
 }) {
+  const { colors } = useTheme();
   
   const expandBottomSheet = () => {
     lastGesture.current = BOTTOM_SHEET_MAX_HEIGHT;
@@ -36,10 +38,10 @@ export default function VehicleBottomSheet({
   };
 
   return (
-    <Animated.View style={[styles.bottomSheet, { height: bottomSheetAnim }]}>
-      <View style={styles.bottomSheetHeader} {...panResponder.panHandlers}>
-        <View style={styles.dragHandle} />
-        <Text style={styles.vehicleCount}>{vehicles.length} vehicles nearby</Text>
+    <Animated.View style={[styles.bottomSheet, { height: bottomSheetAnim, backgroundColor: colors.surface }]}>
+      <View style={[styles.bottomSheetHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]} {...panResponder.panHandlers}>
+        <View style={[styles.dragHandle, { backgroundColor: colors.border }]} />
+        <Text style={[styles.vehicleCount, { color: colors.text }]}>{vehicles.length} vehicles nearby</Text>
         <TouchableOpacity onPress={() => {
           if (lastGesture.current === BOTTOM_SHEET_MIN_HEIGHT) {
             expandBottomSheet();
@@ -56,7 +58,7 @@ export default function VehicleBottomSheet({
               })
             }]
           }}>
-            <Text style={styles.collapseIcon}>▼</Text>
+            <Text style={[styles.collapseIcon, { color: colors.textSecondary }]}>▼</Text>
           </Animated.View>
         </TouchableOpacity>
       </View>

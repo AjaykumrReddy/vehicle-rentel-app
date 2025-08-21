@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ProfileMenuProps {
   onLogout: () => void;
 }
 
 export default function ProfileMenu({ onLogout }: ProfileMenuProps) {
+  const { colors } = useTheme();
   const menuItems = [
     { icon: '🚗', title: 'My Bookings', subtitle: 'View your rental history', onPress: () => {} },
     { icon: '💳', title: 'Payment Methods', subtitle: 'Manage cards & wallets', onPress: () => {} },
@@ -19,30 +21,30 @@ export default function ProfileMenu({ onLogout }: ProfileMenuProps) {
   return (
     <>
       {/* Menu Items */}
-      <View style={styles.menuSection}>
+      <View style={[styles.menuSection, { backgroundColor: colors.surface }]}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={item.onPress}>
+          <TouchableOpacity key={index} style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={item.onPress}>
             <View style={styles.menuLeft}>
               <Text style={styles.menuIcon}>{item.icon}</Text>
               <View>
-                <Text style={styles.menuTitle}>{item.title}</Text>
-                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                <Text style={[styles.menuTitle, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.menuSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
               </View>
             </View>
-            <Text style={styles.chevron}>›</Text>
+            <Text style={[styles.chevron, { color: colors.textSecondary }]}>›</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Logout */}
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-        <Text style={styles.logoutText}>🚪 Logout</Text>
+      <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.surface }]} onPress={onLogout}>
+        <Text style={[styles.logoutText, { color: colors.error }]}>🚪 Logout</Text>
       </TouchableOpacity>
 
       {/* App Info */}
       <View style={styles.appInfo}>
-        <Text style={styles.appVersion}>Version 1.0.0</Text>
-        <Text style={styles.memberSince}>Member since {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
+        <Text style={[styles.appVersion, { color: colors.textSecondary }]}>Version 1.0.0</Text>
+        <Text style={[styles.memberSince, { color: colors.textSecondary }]}>Member since {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
       </View>
     </>
   );

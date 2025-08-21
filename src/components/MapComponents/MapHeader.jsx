@@ -1,21 +1,24 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function MapHeader({ searchQuery, setSearchQuery, navigation }) {
+  const { colors } = useTheme();
   return (
     <View style={styles.header}>
-      <TouchableOpacity style={styles.menuButton}>
-        <Text style={styles.menuIcon}>☰</Text>
+      <TouchableOpacity style={[styles.menuButton, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.menuIcon, { color: colors.text }]}>☰</Text>
       </TouchableOpacity>
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           placeholder="Where do you want to go?"
+          placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
-      <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
+      <TouchableOpacity style={[styles.profileButton, { backgroundColor: colors.surface }]} onPress={() => navigation.navigate('Profile')}>
         <Text style={styles.profileIcon}>👤</Text>
       </TouchableOpacity>
     </View>
