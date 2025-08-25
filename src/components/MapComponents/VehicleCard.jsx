@@ -4,7 +4,7 @@ import { calculateDistance } from '../../utils/mapUtils';
 import { parsePoint } from '../../utils/mapUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function VehicleCard({ vehicle, onPress, userLocation }) {
+export default function VehicleCard({ vehicle, onPress, userLocation, navigation }) {
   const { colors } = useTheme();
   const getVehicleIcon = (vehicle) => {
     const type = vehicle.vehicle_type.toLowerCase();
@@ -65,7 +65,10 @@ export default function VehicleCard({ vehicle, onPress, userLocation }) {
       </View>
       <View style={styles.vehiclePrice}>
         <Text style={[styles.priceText, { color: colors.text }]}>₹50/hr</Text>
-        <TouchableOpacity style={[styles.bookButton, { backgroundColor: colors.primary }]}>
+        <TouchableOpacity 
+          style={[styles.bookButton, { backgroundColor: colors.primary }]}
+          onPress={() => navigation.navigate('VehicleBooking', { vehicle })}
+        >
           <Text style={styles.bookButtonText}>Book</Text>
         </TouchableOpacity>
       </View>

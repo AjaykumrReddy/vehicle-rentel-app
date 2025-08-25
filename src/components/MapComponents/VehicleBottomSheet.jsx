@@ -13,7 +13,8 @@ export default function VehicleBottomSheet({
   lastGesture,
   BOTTOM_SHEET_MIN_HEIGHT,
   BOTTOM_SHEET_MAX_HEIGHT,
-  userLocation
+  userLocation,
+  navigation
 }) {
   const { colors } = useTheme();
   
@@ -75,6 +76,7 @@ export default function VehicleBottomSheet({
             vehicle={vehicle} 
             onPress={() => onVehiclePress(vehicle)}
             userLocation={userLocation}
+            navigation={navigation}
           />
         ))}
       </ScrollView>

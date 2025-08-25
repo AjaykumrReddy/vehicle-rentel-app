@@ -249,6 +249,7 @@ export default function MapScreen({ navigation }) {
         BOTTOM_SHEET_MIN_HEIGHT={BOTTOM_SHEET_MIN_HEIGHT}
         BOTTOM_SHEET_MAX_HEIGHT={BOTTOM_SHEET_MAX_HEIGHT}
         userLocation={location}
+        navigation={navigation}
       />
     </View>
   );

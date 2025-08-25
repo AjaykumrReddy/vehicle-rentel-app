@@ -1,6 +1,6 @@
 // App Configuration
 export const Config = {
-  API_BASE_URL: 'https://d4a1cf5ea2f3.ngrok-free.app',
+  API_BASE_URL: 'https://5c73a541ce33.ngrok-free.app',
   API_TIMEOUT: 10000,
 };
 

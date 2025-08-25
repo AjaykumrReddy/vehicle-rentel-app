@@ -134,3 +134,30 @@ export const setVehicleAvailabilitySlots = async (vehicleId: string,payload: any
     throw error;
   }
 }
+
+// Get Vehicle Availability Slots
+
+export const getVehicleAvailabilitySlots = async (vehicleId: string) => {
+  try{
+    const response = await api.get(`/vehicles/${vehicleId}/availability_slots`);
+    console.log('Get vehicle availability slots response:', response.data);
+    return response.data;
+  }catch(error){
+    console.error('Get vehicle availability slots error:', error);
+    throw error;
+  }
+}
+
+// create bookings
+export const createVehicleBooking = async (bookingData: any) => {
+  try{
+    const token = await getAuthToken();
+    const response = await api.post(`/bookings`, bookingData, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return response
+  }catch(error){
+    console.error('Create vehicle booking error:', error);
+    throw error;
+  }
+}

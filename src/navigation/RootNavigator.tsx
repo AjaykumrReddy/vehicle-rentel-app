@@ -13,6 +13,7 @@ import AddVehicleScreen from '../screens/AddVehicleScreen';
 import ImageUploadScreen from '../screens/ImageUploadScreen';
 import AvailabilitySetupScreen from '../screens/AvailabilitySetupScreen';
 import SetVehicleAvailabilityScreen from '../screens/SetVehicleAvailabilityScreen';
+import VehicleBookingScreen from '../screens/VehicleBookingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ export default function RootNavigator() {
         <Stack.Screen name="ImageUpload" component={ImageUploadScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AvailabilitySetup" component={AvailabilitySetupScreen} options={{ headerShown: false }} />
         <Stack.Screen name="SetVehicleAvailability" component={SetVehicleAvailabilityScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="VehicleBooking" component={VehicleBookingScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
