@@ -102,7 +102,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
           onLocationToggle={setLocationEnabled}
         />
         
-        <ProfileMenu onLogout={handleLogout} />
+        <ProfileMenu navigation={navigation} onLogout={handleLogout} />
       </ScrollView>
     </SafeAreaView>
   );

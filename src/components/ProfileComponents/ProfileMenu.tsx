@@ -4,12 +4,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 interface ProfileMenuProps {
   onLogout: () => void;
+  navigation: any;
 }
 
-export default function ProfileMenu({ onLogout }: ProfileMenuProps) {
+export default function ProfileMenu({ navigation, onLogout }: ProfileMenuProps) {
   const { colors } = useTheme();
   const menuItems = [
-    { icon: '🚗', title: 'My Bookings', subtitle: 'View your rental history', onPress: () => {} },
+    { icon: '🚗', title: 'My Bookings', subtitle: 'View your rental history', onPress: () => {navigation.navigate('MyBookings');} },
     { icon: '💳', title: 'Payment Methods', subtitle: 'Manage cards & wallets', onPress: () => {} },
     { icon: '🎫', title: 'Offers & Coupons', subtitle: 'Available discounts', onPress: () => {} },
     { icon: '📍', title: 'Saved Addresses', subtitle: 'Home, work & more', onPress: () => {} },
