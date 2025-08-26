@@ -15,6 +15,7 @@ import AvailabilitySetupScreen from '../screens/AvailabilitySetupScreen';
 import SetVehicleAvailabilityScreen from '../screens/SetVehicleAvailabilityScreen';
 import VehicleBookingScreen from '../screens/VehicleBookingScreen';
 import MyBookingsScreen from '../screens/MyBookingsScreen';
+import OwnerDashboardScreen from '../screens/OwnerDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +36,7 @@ export default function RootNavigator() {
         <Stack.Screen name="SetVehicleAvailability" component={SetVehicleAvailabilityScreen} options={{ headerShown: false }} />
         <Stack.Screen name="VehicleBooking" component={VehicleBookingScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MyBookings" component={MyBookingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="OwnerDashboard" component={OwnerDashboardScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

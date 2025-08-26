@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface ProfileMenuProps {
@@ -11,6 +11,7 @@ export default function ProfileMenu({ navigation, onLogout }: ProfileMenuProps) 
   const { colors } = useTheme();
   const menuItems = [
     { icon: '🚗', title: 'My Bookings', subtitle: 'View your rental history', onPress: () => {navigation.navigate('MyBookings');} },
+    { icon: '📋', title: 'Owner Dashboard', subtitle: 'Manage booking requests', onPress: () => {navigation.navigate('OwnerDashboard');} },
     { icon: '💳', title: 'Payment Methods', subtitle: 'Manage cards & wallets', onPress: () => {} },
     { icon: '🎫', title: 'Offers & Coupons', subtitle: 'Available discounts', onPress: () => {} },
     { icon: '📍', title: 'Saved Addresses', subtitle: 'Home, work & more', onPress: () => {} },

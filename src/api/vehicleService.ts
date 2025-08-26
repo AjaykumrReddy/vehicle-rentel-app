@@ -148,16 +148,3 @@ export const getVehicleAvailabilitySlots = async (vehicleId: string) => {
   }
 }
 
-// create bookings
-export const createVehicleBooking = async (bookingData: any) => {
-  try{
-    const token = await getAuthToken();
-    const response = await api.post(`/bookings`, bookingData, {
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
-    return response
-  }catch(error){
-    console.error('Create vehicle booking error:', error);
-    throw error;
-  }
-}

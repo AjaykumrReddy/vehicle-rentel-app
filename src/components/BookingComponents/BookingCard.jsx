@@ -94,20 +94,21 @@ export default function BookingCard({ booking, onPress, onCancel }) {
       <View style={styles.details}>
         <View style={styles.timeInfo}>
           <View style={styles.timeRow}>
-            <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>From</Text>
+            <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>From:</Text>
             <Text style={[styles.timeValue, { color: colors.text }]}>
               {formatDateTime(booking.start_time)}
             </Text>
           </View>
           <View style={styles.timeRow}>
-            <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>To</Text>
+            <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>To:</Text>
             <Text style={[styles.timeValue, { color: colors.text }]}>
               {formatDateTime(booking.end_time)}
             </Text>
           </View>
         </View>
         
-        <View style={styles.durationContainer}>
+        <View style={[styles.durationContainer, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+          <Text style={[styles.durationLabel, { color: colors.textSecondary }]}>Duration</Text>
           <Text style={[styles.duration, { color: colors.primary }]}>
             {getDuration()}
           </Text>
@@ -209,21 +210,35 @@ const styles = StyleSheet.create({
   },
   timeInfo: {
     flex: 1,
+    marginRight: 12,
   },
   timeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+    alignItems: 'center',
+    marginBottom: 6,
   },
   timeLabel: {
     fontSize: 12,
+    width: 35,
+    marginRight: 8,
   },
   timeValue: {
     fontSize: 12,
     fontWeight: '500',
+    flex: 1,
   },
   durationContainer: {
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 70,
+  },
+  durationLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginBottom: 2,
   },
   duration: {
     fontSize: 14,

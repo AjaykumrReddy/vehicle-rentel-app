@@ -59,6 +59,22 @@ export const cancelBooking = async (bookingId: string) => {
   }
 };
 
+// Create booking with notification
+export const createVehicleBooking = async (bookingData: any) => {
+  try {
+    const token = await getAuthToken();
+    const response = await api.post('/bookings/', bookingData, {
+      headers: { 'Authorization': `Bearer ${token}` },
+      timeout: 15000
+    });
+    console.log('Booking response:', response.data);
+    
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Get booking details
 export const getBookingDetails = async (bookingId: string) => {
   try {

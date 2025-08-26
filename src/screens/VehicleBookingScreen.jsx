@@ -14,7 +14,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { getVehicleAvailabilitySlots } from '../api/vehicleService';
 import CalendarPicker from '../components/CalendarPicker';
 import TimePicker from '../components/TimePicker';
-import { createVehicleBooking } from '../api/vehicleService';
+import { createVehicleBooking } from '../api/bookingService';
 import { useAlert } from '../hooks/useAlert';
 import CustomAlert from '../components/CustomAlert';
 
