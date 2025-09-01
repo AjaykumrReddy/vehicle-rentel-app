@@ -25,7 +25,7 @@ export default function ProfileMenu({ navigation, onLogout }: ProfileMenuProps) 
       {/* Menu Items */}
       <View style={[styles.menuSection, { backgroundColor: colors.surface }]}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={item.onPress}>
+          <TouchableOpacity key={`menu-${index}-${item.title}`} style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={item.onPress}>
             <View style={styles.menuLeft}>
               <Text style={styles.menuIcon}>{item.icon}</Text>
               <View>

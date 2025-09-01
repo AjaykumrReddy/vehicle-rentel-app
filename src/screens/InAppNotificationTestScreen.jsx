@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useInAppNotification } from '../contexts/InAppNotificationContext';
@@ -118,7 +119,8 @@ export default function InAppNotificationTestScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={styles.scrollView}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
@@ -196,7 +198,7 @@ export default function InAppNotificationTestScreen() {
           </Text>
           {notifications.slice(0, 10).map((notification, index) => (
             <TouchableOpacity 
-              key={index} 
+              key={notification.id || `notification-${index}`} 
               style={[styles.notificationItem, { borderBottomColor: colors.border }]}
               onPress={() => !notification.read && handleMarkAsRead(notification.id)}
             >
@@ -235,12 +237,16 @@ export default function InAppNotificationTestScreen() {
           6. Works without push notifications!
         </Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   header: {

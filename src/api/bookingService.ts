@@ -62,6 +62,7 @@ export const cancelBooking = async (bookingId: string) => {
 // Create booking with notification
 export const createVehicleBooking = async (bookingData: any) => {
   try {
+    console.log('Booking data:', bookingData);
     const token = await getAuthToken();
     const response = await api.post('/bookings/', bookingData, {
       headers: { 'Authorization': `Bearer ${token}` },
@@ -71,6 +72,7 @@ export const createVehicleBooking = async (bookingData: any) => {
     
     return response.data;
   } catch (error) {
+    console.log("booking error ",error)
     throw error;
   }
 };

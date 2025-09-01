@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // App Configuration
 export const Config = {
-  API_BASE_URL: 'https://9db908deb29d.ngrok-free.app',
+  API_BASE_URL: 'https://043160bee0d7.ngrok-free.app',
   API_TIMEOUT: 10000,
 };
 

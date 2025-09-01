@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  SafeAreaView,
 } from 'react-native';
+import PagerView from 'react-native-pager-view';
 import { useTheme } from '../contexts/ThemeContext';
 import BookingCard from '../components/BookingComponents/BookingCard';
 import BookingFilters from '../components/BookingComponents/BookingFilters';
@@ -18,22 +20,21 @@ export default function MyBookingsScreen({ navigation }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('ALL');
+  const [activeFilter, setActiveFilter] = useState(0);
+  const pagerRef = useRef(null);
 
   const filters = [
-    { key: 'ALL', label: 'All', count: bookings?.length || 0 },
-    { key: 'ACTIVE', label: 'Active', count: bookings?.filter(b => ['CONFIRMED', 'ACTIVE'].includes(b.status)).length || 0 },
-    { key: 'PENDING', label: 'Pending', count: bookings?.filter(b => b.status === 'PENDING').length || 0 },
-    { key: 'COMPLETED', label: 'Completed', count: bookings?.filter(b => b.status === 'COMPLETED').length || 0 },
+    { key: 0, label: 'All', count: bookings?.length || 0 },
+    { key: 1, label: 'Active', count: bookings?.filter(b => ['CONFIRMED', 'ACTIVE'].includes(b.status)).length || 0 },
+    { key: 2, label: 'Pending', count: bookings?.filter(b => b.status === 'PENDING').length || 0 },
+    { key: 3, label: 'Completed', count: bookings?.filter(b => b.status === 'COMPLETED').length || 0 },
   ];
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const response = await getUserBookings();
-      console.log("response", response);
       const bookingsData = response.bookings || [];
-      console.log("bookings", bookingsData);
       
       setBookings(bookingsData);
     } catch (error) {
@@ -53,13 +54,22 @@ export default function MyBookingsScreen({ navigation }) {
     setRefreshing(false);
   };
 
-  const getFilteredBookings = () => {
+  const getFilteredBookings = (filterIndex) => {
     if (!bookings || !Array.isArray(bookings)) return [];
-    if (activeFilter === 'ALL') return bookings;
-    if (activeFilter === 'ACTIVE') return bookings.filter(b => ['CONFIRMED', 'ACTIVE'].includes(b.status));
-    if (activeFilter === 'PENDING') return bookings.filter(b => b.status === 'PENDING');
-    if (activeFilter === 'COMPLETED') return bookings.filter(b => b.status === 'COMPLETED');
+    if (filterIndex === 0) return bookings;
+    if (filterIndex === 1) return bookings.filter(b => ['CONFIRMED', 'ACTIVE'].includes(b.status));
+    if (filterIndex === 2) return bookings.filter(b => b.status === 'PENDING');
+    if (filterIndex === 3) return bookings.filter(b => b.status === 'COMPLETED');
     return bookings;
+  };
+
+  const handleFilterPress = (filterIndex) => {
+    setActiveFilter(filterIndex);
+    pagerRef.current?.setPage(filterIndex);
+  };
+
+  const handlePageSelected = (e) => {
+    setActiveFilter(e.nativeEvent.position);
   };
 
   const handleBookingPress = (booking) => {
@@ -73,7 +83,7 @@ export default function MyBookingsScreen({ navigation }) {
       
       // Update local state
       setBookings(prev => prev.map(booking => 
-        booking.id === bookingId 
+        (booking.booking_id || booking.id) === bookingId 
           ? { ...booking, status: 'CANCELLED' }
           : booking
       ));
@@ -93,24 +103,10 @@ export default function MyBookingsScreen({ navigation }) {
 
   const filteredBookings = getFilteredBookings();
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>My Bookings</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          {bookings?.length || 0} total booking{(bookings?.length || 0) !== 1 ? 's' : ''}
-        </Text>
-      </View>
-
-      {/* Filters */}
-      <BookingFilters 
-        filters={filters}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-      />
-
-      {/* Bookings List */}
+  const renderFilterContent = (filterIndex) => {
+    const filteredBookings = getFilteredBookings(filterIndex);
+    
+    return (
       <ScrollView
         style={styles.bookingsList}
         showsVerticalScrollIndicator={false}
@@ -128,12 +124,12 @@ export default function MyBookingsScreen({ navigation }) {
             <Text style={[styles.emptyIcon, { color: colors.textSecondary }]}>📅</Text>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No bookings found</Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              {activeFilter === 'ALL' 
+              {filterIndex === 0 
                 ? "You haven't made any bookings yet"
-                : `No ${activeFilter.toLowerCase()} bookings`
+                : `No ${filters[filterIndex].label.toLowerCase()} bookings`
               }
             </Text>
-            {activeFilter === 'ALL' && (
+            {filterIndex === 0 && (
               <TouchableOpacity 
                 style={[styles.exploreButton, { backgroundColor: colors.primary }]}
                 onPress={() => navigation.navigate('Map')}
@@ -143,17 +139,72 @@ export default function MyBookingsScreen({ navigation }) {
             )}
           </View>
         ) : (
-          filteredBookings.map((booking) => (
+          filteredBookings.map((booking, index) => (
             <BookingCard
-              key={booking.id}
+              key={booking.booking_id || booking.id || `booking-${index}`}
               booking={booking}
               onPress={() => handleBookingPress(booking)}
-              onCancel={() => handleCancelBooking(booking.id)}
+              onCancel={() => handleCancelBooking(booking.booking_id || booking.id)}
             />
           ))
         )}
       </ScrollView>
-    </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>My Bookings</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+          {bookings?.length || 0} total booking{(bookings?.length || 0) !== 1 ? 's' : ''}
+        </Text>
+      </View>
+
+      {/* Filters */}
+      <View style={[styles.filtersContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+          {filters.map((filter) => (
+            <TouchableOpacity
+              key={filter.key}
+              style={[
+                styles.filterButton,
+                activeFilter === filter.key && { backgroundColor: colors.primary + '15', borderColor: colors.primary }
+              ]}
+              onPress={() => handleFilterPress(filter.key)}
+            >
+              <Text style={[
+                styles.filterText,
+                { color: activeFilter === filter.key ? colors.primary : colors.textSecondary }
+              ]}>
+                {filter.label}
+              </Text>
+              <Text style={[
+                styles.filterCount,
+                { color: activeFilter === filter.key ? colors.primary : colors.textSecondary }
+              ]}>
+                {filter.count}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Swipeable Content */}
+      <PagerView
+        ref={pagerRef}
+        style={styles.pagerView}
+        initialPage={0}
+        onPageSelected={handlePageSelected}
+      >
+        {filters.map((filter) => (
+          <View key={filter.key} style={styles.pageContent}>
+            {renderFilterContent(filter.key)}
+          </View>
+        ))}
+      </PagerView>
+    </SafeAreaView>
   );
 }
 
@@ -170,10 +221,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   header: {
-    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingVertical: 16,
+    paddingTop: 50,
     borderBottomWidth: 1,
+  },
+  filtersContainer: {
+    borderBottomWidth: 1,
+    paddingVertical: 8,
+  },
+  filtersScroll: {
+    paddingHorizontal: 16,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 6,
+  },
+  filterCount: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  pagerView: {
+    flex: 1,
+  },
+  pageContent: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,
