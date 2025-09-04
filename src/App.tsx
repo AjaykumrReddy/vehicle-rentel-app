@@ -4,9 +4,11 @@ import RootNavigator from './navigation/RootNavigator';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { InAppNotificationProvider } from './contexts/InAppNotificationContext';
 import InAppNotificationBanner from './components/InAppNotificationBanner';
+import { WebSocketProvider } from './contexts/WebSocketContext';
 
 export default function App() {
   return (
+    <WebSocketProvider>
     <ThemeProvider>
       <InAppNotificationProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -15,5 +17,6 @@ export default function App() {
         </GestureHandlerRootView>
       </InAppNotificationProvider>
     </ThemeProvider>
+    </WebSocketProvider>
   );
 }

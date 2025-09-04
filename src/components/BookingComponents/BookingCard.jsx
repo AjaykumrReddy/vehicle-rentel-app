@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function BookingCard({ booking, onPress, onCancel }) {
+export default function BookingCard({ booking, onPress, onCancel, onChat }) {
   const { colors } = useTheme();
 
   const getVehicleIcon = (vehicleType) => {
@@ -60,6 +60,7 @@ export default function BookingCard({ booking, onPress, onCancel }) {
   };
 
   const canCancel = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+  const canChat = ['CONFIRMED', 'ACTIVE'].includes(booking.status);
 
   return (
     <TouchableOpacity 
@@ -141,11 +142,23 @@ export default function BookingCard({ booking, onPress, onCancel }) {
             </TouchableOpacity>
           )}
           
+          {canChat && (
+            <TouchableOpacity 
+              style={[styles.chatButton, { backgroundColor: '#00C851' }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                onChat();
+              }}
+            >
+              <Text style={styles.chatButtonText}>💬</Text>
+            </TouchableOpacity>
+          )}
+          
           <TouchableOpacity 
             style={[styles.viewButton, { backgroundColor: colors.primary }]}
             onPress={onPress}
           >
-            <Text style={styles.viewButtonText}>View Details</Text>
+            <Text style={styles.viewButtonText}>View</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -286,5 +299,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  chatButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  chatButtonText: {
+    fontSize: 14,
   },
 });
