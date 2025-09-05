@@ -133,16 +133,24 @@ export default function OwnerDashboardScreen({ navigation }) {
     setActiveTab(e.nativeEvent.position);
   };
 
+  const handleChatPress = (booking) => {
+    navigation.navigate('Chat', { booking });
+  };
+
   const renderBookingRequest = ({ item }) => (
     <BookingRequestCard 
       item={item} 
       onAccept={(bookingId) => handleBookingAction(bookingId, 'accept')}
       onReject={(bookingId) => handleBookingAction(bookingId, 'reject')}
+      onChat={handleChatPress}
     />
   );
 
   const renderActiveBooking = ({ item }) => (
-    <ActiveBookingCard item={item} />
+    <ActiveBookingCard 
+      item={item} 
+      onChat={handleChatPress}
+    />
   );
 
   const renderVehicle = ({ item }) => (

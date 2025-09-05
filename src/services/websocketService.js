@@ -10,26 +10,49 @@ class WebSocketService {
     this.isConnected = false;
     this.userId = null;
     this.token = null;
+    this.heartbeatInterval = null;
+    this.pingTimeout = null;
   }
 
   connect(token) {
+    // Prevent multiple connections
+    if (this.isConnected && this.token === token) {
+      return;
+    }
+    
     this.token = token;
     
-    const wsUrl = `wss://6528d915faa4.ngrok-free.app/ws/chat?token=${token}`;
-    console.log('Connecting to WebSocket:', wsUrl);
+    // Close existing connection if any
+    if (this.ws) {
+      this.ws.close();
+    }
+    
+    const wsBaseUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+    const wsUrl = `${wsBaseUrl}/ws/chat?token=${token}`;
+    
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected');
+
       this.isConnected = true;
       this.reconnectAttempts = 0;
+      this.startHeartbeat();
       this.emit('connected');
     };
 
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('WebSocket message received:', data);
+
+        
+        // Handle pong response
+        if (data.type === 'pong') {
+          if (this.pingTimeout) {
+            clearTimeout(this.pingTimeout);
+            this.pingTimeout = null;
+          }
+          return;
+        }
         
         // Store user ID from connection response
         if (data.type === 'connected' && data.user_id) {
@@ -43,8 +66,9 @@ class WebSocketService {
     };
 
     this.ws.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
+
       this.isConnected = false;
+      this.stopHeartbeat();
       this.emit('disconnected');
       this.handleReconnect();
     };
@@ -69,10 +93,10 @@ class WebSocketService {
   sendMessage(type, data) {
     if (this.ws && this.isConnected) {
       const message = { type, ...data };
-      console.log('Sending WebSocket message:', message);
+
       this.ws.send(JSON.stringify(message));
     } else {
-      console.warn('WebSocket not connected, cannot send message');
+
     }
   }
 
@@ -111,7 +135,32 @@ class WebSocketService {
     }
   }
 
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      if (this.isConnected) {
+        this.sendMessage('ping', {});
+        this.pingTimeout = setTimeout(() => {
+
+          this.ws?.close();
+        }, 5000);
+      }
+    }, 60000); // Send ping every 60 seconds
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    if (this.pingTimeout) {
+      clearTimeout(this.pingTimeout);
+      this.pingTimeout = null;
+    }
+  }
+
   disconnect() {
+    this.stopHeartbeat();
     if (this.ws) {
       this.ws.close();
       this.ws = null;

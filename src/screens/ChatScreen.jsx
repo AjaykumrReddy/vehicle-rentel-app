@@ -25,6 +25,7 @@ export default function ChatScreen({ route, navigation }) {
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
   const [otherUserStatus, setOtherUserStatus] = useState('offline');
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
   const flatListRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -86,10 +87,13 @@ export default function ChatScreen({ route, navigation }) {
     websocketService.on('typing_status', handleTypingStatus);
     websocketService.on('user_status', handleUserStatus);
     websocketService.on('connected', handleWebSocketConnected);
+    websocketService.on('disconnected', () => setConnectionStatus('disconnected'));
+    websocketService.on('error', () => setConnectionStatus('error'));
   };
 
   const handleWebSocketConnected = (data) => {
     console.log('WebSocket connected with user data:', data);
+    setConnectionStatus('connected');
     if (data && data.user_id) {
       console.log('WebSocket connected with user:', data.user_id);
       // Now we can get other user status
@@ -104,13 +108,20 @@ export default function ChatScreen({ route, navigation }) {
 
   const handleNewMessage = (data) => {
     const bookingId = booking.booking_id || booking.id;
+    console.log('Received new message for booking:', bookingId, 'Message booking:', data.booking_id);
     if (data.booking_id === bookingId) {
-      setMessages(prev => [...prev, {
-        id: data.id,
-        sender_id: data.sender_id,
-        message_text: data.message_text,
-        created_at: data.created_at
-      }]);
+      setMessages(prev => {
+        // Avoid duplicate messages
+        const exists = prev.find(msg => msg.id === data.id);
+        if (exists) return prev;
+        
+        return [...prev, {
+          id: data.id,
+          sender_id: data.sender_id,
+          message_text: data.message_text,
+          created_at: data.created_at
+        }];
+      });
       setTimeout(() => flatListRef.current?.scrollToEnd(), 100);
     }
   };
@@ -241,7 +252,10 @@ export default function ChatScreen({ route, navigation }) {
             {booking.vehicle?.brand} {booking.vehicle?.model}
           </Text>
           <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-            {otherUserStatus === 'online' ? '🟢 Online' : '⚫ Offline'}
+            {connectionStatus === 'connected' 
+              ? (otherUserStatus === 'online' ? '🟢 Online' : '⚫ Offline')
+              : connectionStatus === 'connecting' ? '🟡 Connecting...' : '🔴 Disconnected'
+            }
           </Text>
         </View>
       </View>

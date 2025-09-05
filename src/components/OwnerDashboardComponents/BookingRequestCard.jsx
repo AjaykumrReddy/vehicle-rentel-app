@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function BookingRequestCard({ item, onAccept, onReject }) {
+export default function BookingRequestCard({ item, onAccept, onReject, onChat }) {
   const { colors } = useTheme();
 
   const getVehicleIcon = (vehicleType) => {
@@ -47,7 +47,7 @@ export default function BookingRequestCard({ item, onAccept, onReject }) {
               {item.vehicle?.brand} {item.vehicle?.model}
             </Text>
             <Text style={[styles.vehicleReg, { color: colors.textSecondary }]}>
-              {item.vehicle?.registration_number}
+              {item.vehicle?.license_plate}
             </Text>
             <Text style={[styles.customerName, { color: colors.textSecondary }]}>
               by {item.customer?.name}
@@ -96,6 +96,13 @@ export default function BookingRequestCard({ item, onAccept, onReject }) {
 
       <View style={styles.actionButtons}>
         <TouchableOpacity
+          style={[styles.chatButton, { borderColor: colors.primary }]}
+          onPress={() => onChat && onChat(item)}
+        >
+          <Text style={[styles.chatButtonText, { color: colors.primary }]}>💬 Chat</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
           style={[styles.rejectButton, { borderColor: '#DC3545' }]}
           onPress={() => onReject(item.booking_id)}
         >
@@ -136,9 +143,11 @@ const styles = StyleSheet.create({
   customerDetails: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   customerPhone: { fontSize: 14, fontWeight: '500' },
   totalAmount: { fontSize: 18, fontWeight: '700' },
-  actionButtons: { flexDirection: 'row', padding: 16, gap: 12 },
-  rejectButton: { flex: 1, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
-  rejectButtonText: { fontSize: 16, fontWeight: '600' },
-  acceptButton: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
-  acceptButtonText: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  actionButtons: { flexDirection: 'row', padding: 16, gap: 8 },
+  chatButton: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, alignItems: 'center' },
+  chatButtonText: { fontSize: 14, fontWeight: '600' },
+  rejectButton: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
+  rejectButtonText: { fontSize: 14, fontWeight: '600' },
+  acceptButton: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  acceptButtonText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
 });

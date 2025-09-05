@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function ActiveBookingCard({ item }) {
+export default function ActiveBookingCard({ item, onChat }) {
   const { colors } = useTheme();
 
   const getVehicleIcon = (vehicleType) => {
@@ -40,6 +40,15 @@ export default function ActiveBookingCard({ item }) {
           <Text style={[styles.totalAmount, { color: colors.text }]}>₹{item.total_amount}</Text>
         </View>
       </View>
+      
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={[styles.chatButton, { borderColor: colors.primary }]}
+          onPress={() => onChat && onChat(item)}
+        >
+          <Text style={[styles.chatButtonText, { color: colors.primary }]}>💬 Chat</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -59,4 +68,7 @@ const styles = StyleSheet.create({
   customerDetails: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   customerPhone: { fontSize: 14, fontWeight: '500' },
   totalAmount: { fontSize: 18, fontWeight: '700' },
+  actionButtons: { flexDirection: 'row', padding: 16, paddingTop: 12 },
+  chatButton: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, alignItems: 'center' },
+  chatButtonText: { fontSize: 14, fontWeight: '600' },
 });
