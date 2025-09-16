@@ -1,40 +1,26 @@
 {
   "expo": {
-    "name": "vehicle-rental-app",
+    "name": "Vehicle Rental App",
     "slug": "vehicle-rental-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby vehicles."
-      },
       "supportsTablet": true
-      
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": ["ACCESS_FINE_LOCATION"]
-      },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "com.vehiclerental.app"
     },
     "plugins": [
       [
-        "expo-image-picker",
+        "expo-build-properties",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your vehicle listing."
+          "android": {
+            "minSdkVersion": 21
+          }
         }
       ]
     ]

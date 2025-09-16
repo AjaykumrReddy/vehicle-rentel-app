@@ -270,15 +270,8 @@ export default function VehicleBookingScreen({ route, navigation }) {
       };
       
       console.log('Booking data:', bookingData);
-      
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/bookings', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(bookingData)
-      // });
 
-      const response = await createVehicleBooking(bookingData)
+      await createVehicleBooking(bookingData)
       const startStr = `${formatDate(startDate)} ${formatTime(startTime)}`;
       const endStr = `${formatDate(endDate || startDate)} ${formatTime(endTime)}`;
 

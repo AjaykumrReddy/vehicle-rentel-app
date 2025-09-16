@@ -2,8 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 
 // App Configuration
 export const Config = {
-  API_BASE_URL: 'https://6528d915faa4.ngrok-free.app',
+  API_BASE_URL: 'https://65c95b68963e.ngrok-free.app',
   API_TIMEOUT: 10000,
+  RAZORPAY_KEY: 'rzp_test_RDpbQdPVx3MOT1'
 };
 
 // Supabase Configuration

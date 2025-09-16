@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export default function BookingCard({ booking, onPress, onCancel, onChat }) {
+export default function BookingCard({ booking, onPress, onCancel, onChat, onPayment }) {
   const { colors } = useTheme();
 
   const getVehicleIcon = (vehicleType) => {
@@ -13,27 +13,7 @@ export default function BookingCard({ booking, onPress, onCancel, onChat }) {
     return '🛺';
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'CONFIRMED': return '#00C851';
-      case 'ACTIVE': return '#007AFF';
-      case 'PENDING': return '#FF8800';
-      case 'COMPLETED': return '#6C757D';
-      case 'CANCELLED': return '#DC3545';
-      default: return colors.textSecondary;
-    }
-  };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'CONFIRMED': return 'Confirmed';
-      case 'ACTIVE': return 'Active';
-      case 'PENDING': return 'Pending';
-      case 'COMPLETED': return 'Completed';
-      case 'CANCELLED': return 'Cancelled';
-      default: return status;
-    }
-  };
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -59,8 +39,37 @@ export default function BookingCard({ booking, onPress, onCancel, onChat }) {
     }
   };
 
-  const canCancel = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
-  const canChat = ['CONFIRMED', 'ACTIVE'].includes(booking.status);
+  // Business logic for actions
+  const isPending = booking.status === 'PENDING';
+  const isConfirmed = booking.status === 'CONFIRMED';
+  const isActive = booking.status === 'ACTIVE';
+  const isCompleted = booking.status === 'COMPLETED';
+  const isPaid = booking.payment_status === 'PAID';
+  const paymentPending = booking.payment_status === 'PENDING';
+  
+  // Action permissions
+  const canCancel = isPending || (isConfirmed && paymentPending);
+  const needsPayment = isConfirmed && paymentPending;
+  const canChat = (isConfirmed && isPaid) || isActive || isCompleted;
+  
+  // Status messages
+  const getStatusMessage = () => {
+    if (isPending) return 'Waiting for owner confirmation';
+    if (needsPayment) return 'Complete payment to confirm booking';
+    if (isConfirmed && isPaid) return 'Booking confirmed - Ready to start';
+    if (isActive) return 'Rental in progress';
+    if (isCompleted) return 'Rental completed';
+    return booking.status;
+  };
+  
+  const getStatusColor = () => {
+    if (isPending) return '#FF8800';
+    if (needsPayment) return '#FF6B35';
+    if (isConfirmed && isPaid) return '#00C851';
+    if (isActive) return '#007AFF';
+    if (isCompleted) return '#6C757D';
+    return colors.textSecondary;
+  };
 
   return (
     <TouchableOpacity 
@@ -83,9 +92,9 @@ export default function BookingCard({ booking, onPress, onCancel, onChat }) {
         </View>
         
         <View style={styles.statusContainer}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-              {getStatusText(booking.status)}
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
+            <Text style={[styles.statusText, { color: getStatusColor() }]}>
+              {booking.status}
             </Text>
           </View>
         </View>
@@ -116,6 +125,13 @@ export default function BookingCard({ booking, onPress, onCancel, onChat }) {
         </View>
       </View>
 
+      {/* Status Message */}
+      <View style={[styles.statusSection, { backgroundColor: getStatusColor() + '10', borderTopColor: colors.border }]}>
+        <Text style={[styles.statusMessage, { color: getStatusColor() }]}>
+          {getStatusMessage()}
+        </Text>
+      </View>
+
       {/* Footer */}
       <View style={[styles.footer, { borderTopColor: colors.border }]}>
         <View style={styles.priceInfo}>
@@ -123,43 +139,55 @@ export default function BookingCard({ booking, onPress, onCancel, onChat }) {
             ₹{booking.total_amount}
           </Text>
           <Text style={[styles.priceLabel, { color: colors.textSecondary }]}>
-            Total Amount
+            {isPaid ? 'Paid' : 'Total Amount'}
           </Text>
         </View>
         
         <View style={styles.actions}>
-          {canCancel && (
+          {needsPayment && (
             <TouchableOpacity 
-              style={[styles.cancelButton, { borderColor: colors.border }]}
+              style={[styles.primaryAction, { backgroundColor: '#FF6B35' }]}
               onPress={(e) => {
                 e.stopPropagation();
-                onCancel();
+                onPayment();
               }}
             >
-              <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>
-                Cancel
-              </Text>
+              <Text style={styles.primaryActionText}>Pay Now</Text>
             </TouchableOpacity>
           )}
           
-          {canChat && (
+          {canChat && !needsPayment && (
             <TouchableOpacity 
-              style={[styles.chatButton, { backgroundColor: '#00C851' }]}
+              style={[styles.secondaryAction, { borderColor: colors.primary }]}
               onPress={(e) => {
                 e.stopPropagation();
                 onChat();
               }}
             >
-              <Text style={styles.chatButtonText}>💬</Text>
+              <Text style={[styles.secondaryActionText, { color: colors.primary }]}>💬 Chat</Text>
             </TouchableOpacity>
           )}
           
-          <TouchableOpacity 
-            style={[styles.viewButton, { backgroundColor: colors.primary }]}
-            onPress={onPress}
-          >
-            <Text style={styles.viewButtonText}>View</Text>
-          </TouchableOpacity>
+          {canCancel && (
+            <TouchableOpacity 
+              style={[styles.cancelAction, { borderColor: '#DC3545' }]}
+              onPress={(e) => {
+                e.stopPropagation();
+                onCancel();
+              }}
+            >
+              <Text style={[styles.cancelActionText, { color: '#DC3545' }]}>Cancel</Text>
+            </TouchableOpacity>
+          )}
+          
+          {!needsPayment && (
+            <TouchableOpacity 
+              style={[styles.viewAction, { backgroundColor: colors.primary }]}
+              onPress={onPress}
+            >
+              <Text style={styles.viewActionText}>Details</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -276,38 +304,62 @@ const styles = StyleSheet.create({
   priceLabel: {
     fontSize: 11,
   },
+  statusSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+  },
+  statusMessage: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   actions: {
     flexDirection: 'row',
     gap: 8,
   },
-  cancelButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  primaryAction: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  primaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  secondaryAction: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 6,
     borderWidth: 1,
+    alignItems: 'center',
   },
-  cancelButtonText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  viewButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  viewButtonText: {
-    color: '#fff',
+  secondaryActionText: {
     fontSize: 12,
     fontWeight: '600',
   },
-  chatButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+  cancelAction: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 6,
-    minWidth: 32,
+    borderWidth: 1,
     alignItems: 'center',
   },
-  chatButtonText: {
-    fontSize: 14,
+  cancelActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  viewAction: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  viewActionText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

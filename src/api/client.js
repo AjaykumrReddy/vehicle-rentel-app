@@ -5,6 +5,7 @@ const API_BASE_URL = Config.API_BASE_URL;
 
 const apiRequest = async (endpoint, options = {}) => {
   try {
+    console.log("endpoint - ",endpoint , "options - ", options)
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
@@ -21,6 +22,7 @@ const apiRequest = async (endpoint, options = {}) => {
     }
     return { success: response.ok, data, error: !response.ok ? data : null };
   } catch (error) {
+    console.error('API request error:', error);
     return { success: false, error: error.message };
   }
 };

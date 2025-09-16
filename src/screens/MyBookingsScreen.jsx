@@ -80,6 +80,10 @@ export default function MyBookingsScreen({ navigation }) {
     navigation.navigate('Chat', { booking });
   };
 
+  const handlePaymentPress = (booking) => {
+    navigation.navigate('Payment', { booking });
+  };
+
   const handleCancelBooking = async (bookingId) => {
     try {
       // TODO: Implement cancel booking API
@@ -150,6 +154,7 @@ export default function MyBookingsScreen({ navigation }) {
               onPress={() => handleBookingPress(booking)}
               onCancel={() => handleCancelBooking(booking.booking_id || booking.id)}
               onChat={() => handleChatPress(booking)}
+              onPayment={() => handlePaymentPress(booking)}
             />
           ))
         )}
