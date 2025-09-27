@@ -11,12 +11,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import useLocation from '../hooks/useLocation';
-import CustomAlert from '../components/CustomAlert';
-import { useAlert } from '../hooks/useAlert';
-import { registerVehicle } from '../api/vehicleService';
-import { getUserData } from '../utils/storage';
-import { useTheme } from '../contexts/ThemeContext';
+import useLocation from '../../hooks/useLocation';
+import CustomAlert from '../../components/CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
+import { registerVehicle } from '../../api/vehicleService';
+import { getUserData } from '../../utils/storage';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function AddVehicleScreen({ navigation }: { navigation: any }) {
   const { colors } = useTheme();

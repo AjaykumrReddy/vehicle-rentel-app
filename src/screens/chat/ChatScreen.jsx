@@ -11,10 +11,10 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import { chatAPI } from '../api/chatAPI';
-import websocketService from '../services/websocketService';
-import { getAuthToken } from '../utils/storage';
+import { useTheme } from '../../contexts/ThemeContext';
+import { chatAPI } from '../../api/chatAPI';
+import websocketService from '../../services/websocketService';
+import { getAuthToken } from '../../utils/storage';
 
 export default function ChatScreen({ route, navigation }) {
   const { colors } = useTheme();

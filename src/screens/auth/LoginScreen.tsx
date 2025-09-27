@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { sendOTP } from '../api/authService';
+import { sendOTP } from '../../api/authService';
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [mobile, setMobile] = useState('');

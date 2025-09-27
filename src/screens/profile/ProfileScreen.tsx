@@ -7,14 +7,14 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { getUserData, clearAuthData, getAuthToken } from '../utils/storage';
-import { getUserVehicles } from '../api/authService';
-import api from '../api/axios';
-import ProfileHeader from '../components/ProfileComponents/ProfileHeader';
-import MyVehiclesSection from '../components/ProfileComponents/MyVehiclesSection';
-import ProfileSettings from '../components/ProfileComponents/ProfileSettings';
-import { useTheme } from '../contexts/ThemeContext';
-import ProfileMenu from '../components/ProfileComponents/ProfileMenu';
+import { getUserData, clearAuthData, getAuthToken } from '../../utils/storage';
+import { getUserVehicles } from '../../api/authService';
+import api from '../../api/axios';
+import ProfileHeader from '../../components/ProfileComponents/ProfileHeader';
+import MyVehiclesSection from '../../components/ProfileComponents/MyVehiclesSection';
+import ProfileSettings from '../../components/ProfileComponents/ProfileSettings';
+import { useTheme } from '../../contexts/ThemeContext';
+import ProfileMenu from '../../components/ProfileComponents/ProfileMenu';
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
   const { colors } = useTheme();

@@ -10,13 +10,13 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import { getVehicleAvailabilitySlots } from '../api/vehicleService';
-import CalendarPicker from '../components/CalendarPicker';
-import TimePicker from '../components/TimePicker';
-import { createVehicleBooking } from '../api/bookingService';
-import { useAlert } from '../hooks/useAlert';
-import CustomAlert from '../components/CustomAlert';
+import { useTheme } from '../../contexts/ThemeContext';
+import { getVehicleAvailabilitySlots } from '../../api/vehicleService';
+import CalendarPicker from '../../components/CalendarPicker';
+import TimePicker from '../../components/TimePicker';
+import { createVehicleBooking } from '../../api/bookingService';
+import { useAlert } from '../../hooks/useAlert';
+import CustomAlert from '../../components/CustomAlert';
 
 export default function VehicleBookingScreen({ route, navigation }) {
   const { vehicle } = route.params;

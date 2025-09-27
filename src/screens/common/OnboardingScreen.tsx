@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { images } from '../../assets';
 
 export default function OnboardingScreen({ navigation }: any) {
     return (
         <View style={styles.container}>
-            <Image source={require('../../assets/onboarding.png')} style={styles.image} />
+            <Image source={images.onboarding} style={styles.image} />
             <Text style={styles.title}>Rent Vehicles Near You</Text>
             <Text style={styles.subtitle}>Find, book, and drive easily with our rental app</Text>
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>

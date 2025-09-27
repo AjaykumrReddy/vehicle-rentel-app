@@ -11,10 +11,10 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadVehiclePhotos } from '../api/vehicleService';
-import CustomAlert from '../components/CustomAlert';
-import { useAlert } from '../hooks/useAlert';
-import { useTheme } from '../contexts/ThemeContext';
+import { uploadVehiclePhotos } from '../../api/vehicleService';
+import CustomAlert from '../../components/CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
+import { useTheme } from '../../contexts/ThemeContext';
 
 
 export default function ImageUploadScreen({ navigation, route }: { navigation: any, route: any }) {

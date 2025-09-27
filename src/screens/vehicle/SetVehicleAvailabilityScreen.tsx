@@ -12,10 +12,10 @@ import {
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { setVehicleAvailabilitySlots } from '../api/vehicleService';
-import { useAlert } from '../hooks/useAlert';
-import CustomAlert from '../components/CustomAlert';
-import { useTheme } from '../contexts/ThemeContext';
+import { setVehicleAvailabilitySlots } from '../../api/vehicleService';
+import { useAlert } from '../../hooks/useAlert';
+import CustomAlert from '../../components/CustomAlert';
+import { useTheme } from '../../contexts/ThemeContext';
 
 
 interface TimeSlot {

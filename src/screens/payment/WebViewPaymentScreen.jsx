@@ -9,8 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useTheme } from '../contexts/ThemeContext';
-import { paymentAPI } from '../api/paymentAPI';
+import { useTheme } from '../../contexts/ThemeContext';
+import { paymentAPI } from '../../api/paymentAPI';
 
 export default function WebViewPaymentScreen({ route, navigation }) {
   const { colors } = useTheme();

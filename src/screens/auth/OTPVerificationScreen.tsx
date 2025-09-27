@@ -10,8 +10,8 @@ import {
   ActivityIndicator,
   Keyboard,
 } from 'react-native';
-import { sendOTP, verifyOTP } from '../api/authService';
-import { storeAuthData } from '../utils/storage';
+import { sendOTP, verifyOTP } from '../../api/authService';
+import { storeAuthData } from '../../utils/storage';
 
 export default function OTPVerificationScreen({ navigation, route }: { navigation: any, route: any }) {
   const [otp, setOtp] = useState('');

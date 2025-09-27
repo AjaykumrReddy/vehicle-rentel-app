@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { getAuthToken } from '../utils/storage';
+import { getAuthToken } from '../../utils/storage';
 
 export default function SplashScreen({ navigation }: { navigation: any }) {
   useEffect(() => {

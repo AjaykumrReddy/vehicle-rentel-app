@@ -10,7 +10,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function AvailabilitySetupScreen({ navigation, route }: { navigation: any, route: any }) {
   const { colors } = useTheme();

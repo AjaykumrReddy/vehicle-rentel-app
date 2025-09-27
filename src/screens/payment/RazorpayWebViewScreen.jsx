@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, SafeAreaView, TouchableOpacity, Text, Alert } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
-import { useTheme } from '../contexts/ThemeContext';
-import { Config } from '../config';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Config } from '../../config';
 
 export default function RazorpayWebViewScreen({ route, navigation }) {
   const { colors } = useTheme();
@@ -10,7 +10,7 @@ export default function RazorpayWebViewScreen({ route, navigation }) {
 
   // Get callbacks from PaymentService
   const getCallbacks = () => {
-    const PaymentService = require('../services/paymentService').default;
+    const PaymentService = require('../../services/paymentService').default;
     return PaymentService.getCallbacks();
   };
 
@@ -51,7 +51,7 @@ export default function RazorpayWebViewScreen({ route, navigation }) {
 
   const verifyPayment = async (paymentData) => {
     try {
-      const { paymentAPI } = require('../api/paymentAPI');
+      const { paymentAPI } = require('../../api/paymentAPI');
       
       const verificationResponse = await paymentAPI.verifyPayment({
         booking_id: booking.booking_id || booking.id,

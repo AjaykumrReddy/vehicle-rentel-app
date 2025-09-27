@@ -2,25 +2,28 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import SplashScreen from '../screens/SplashScreen';
-import LoginScreen from '../screens/LoginScreen';
-import OTPVerificationScreen from '../screens/OTPVerificationScreen';
-import SignupScreen from '../screens/SignupScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import MapScreen from '../screens/MapScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import AddVehicleScreen from '../screens/AddVehicleScreen';
-import ImageUploadScreen from '../screens/ImageUploadScreen';
-import AvailabilitySetupScreen from '../screens/AvailabilitySetupScreen';
-import SetVehicleAvailabilityScreen from '../screens/SetVehicleAvailabilityScreen';
-import VehicleBookingScreen from '../screens/VehicleBookingScreen';
-import MyBookingsScreen from '../screens/MyBookingsScreen';
-import OwnerDashboardScreen from '../screens/OwnerDashboardScreen';
-import ChatScreen from '../screens/ChatScreen';
-import PaymentScreen from '../screens/PaymentScreen';
-import WebViewPaymentScreen from '../screens/WebViewPaymentScreen';
-import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
-import RazorpayWebViewScreen from '../screens/RazorpayWebViewScreen';
+// Common screens
+import SplashScreen from '../screens/common/SplashScreen';
+import OnboardingScreen from '../screens/common/OnboardingScreen';
+import MapScreen from '../screens/common/MapScreen';
+
+// Auth screens
+import { LoginScreen, OTPVerificationScreen, SignupScreen } from '../screens/auth';
+
+// Booking screens
+import { VehicleBookingScreen, MyBookingsScreen } from '../screens/booking';
+
+// Payment screens
+import { PaymentScreen, WebViewPaymentScreen, PaymentSuccessScreen, RazorpayWebViewScreen } from '../screens/payment';
+
+// Individual screens
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import AddVehicleScreen from '../screens/vehicle/AddVehicleScreen';
+import ImageUploadScreen from '../screens/vehicle/ImageUploadScreen';
+import AvailabilitySetupScreen from '../screens/vehicle/AvailabilitySetupScreen';
+import SetVehicleAvailabilityScreen from '../screens/vehicle/SetVehicleAvailabilityScreen';
+import OwnerDashboardScreen from '../screens/owner/OwnerDashboardScreen';
+import ChatScreen from '../screens/chat/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 

@@ -9,8 +9,8 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import PaymentService from '../services/paymentService';
+import { useTheme } from '../../contexts/ThemeContext';
+import PaymentService from '../../services/paymentService';
 
 export default function PaymentScreen({ route, navigation }) {
   const { colors } = useTheme();

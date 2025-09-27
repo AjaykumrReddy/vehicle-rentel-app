@@ -13,13 +13,13 @@ import {
   SafeAreaView,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { useTheme } from '../contexts/ThemeContext';
-import OwnerService from '../services/ownerService';
-import BookingRequestCard from '../components/OwnerDashboardComponents/BookingRequestCard';
-import ActiveBookingCard from '../components/OwnerDashboardComponents/ActiveBookingCard';
-import VehicleCard from '../components/OwnerDashboardComponents/VehicleCard';
-import EarningsOverview from '../components/OwnerDashboardComponents/EarningsOverview';
-import DashboardTabBar from '../components/OwnerDashboardComponents/DashboardTabBar';
+import { useTheme } from '../../contexts/ThemeContext';
+import OwnerService from '../../services/ownerService';
+import BookingRequestCard from '../../components/OwnerDashboardComponents/BookingRequestCard';
+import ActiveBookingCard from '../../components/OwnerDashboardComponents/ActiveBookingCard';
+import VehicleCard from '../../components/OwnerDashboardComponents/VehicleCard';
+import EarningsOverview from '../../components/OwnerDashboardComponents/EarningsOverview';
+import DashboardTabBar from '../../components/OwnerDashboardComponents/DashboardTabBar';
 
 export default function OwnerDashboardScreen({ navigation }) {
   const { colors } = useTheme();

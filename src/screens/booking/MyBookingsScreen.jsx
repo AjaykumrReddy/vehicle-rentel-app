@@ -10,10 +10,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { useTheme } from '../contexts/ThemeContext';
-import BookingCard from '../components/BookingComponents/BookingCard';
-import BookingFilters from '../components/BookingComponents/BookingFilters';
-import { getUserBookings } from '../api/bookingService';
+import { useTheme } from '../../contexts/ThemeContext';
+import BookingCard from '../../components/BookingComponents/BookingCard';
+import BookingFilters from '../../components/BookingComponents/BookingFilters';
+import { getUserBookings } from '../../api/bookingService';
 
 export default function MyBookingsScreen({ navigation }) {
   const { colors } = useTheme();
