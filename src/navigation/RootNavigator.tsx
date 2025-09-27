@@ -18,6 +18,8 @@ import MyBookingsScreen from '../screens/MyBookingsScreen';
 import OwnerDashboardScreen from '../screens/OwnerDashboardScreen';
 import ChatScreen from '../screens/ChatScreen';
 import PaymentScreen from '../screens/PaymentScreen';
+import WebViewPaymentScreen from '../screens/WebViewPaymentScreen';
+import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
 import RazorpayWebViewScreen from '../screens/RazorpayWebViewScreen';
 
 const Stack = createNativeStackNavigator();
@@ -42,6 +44,8 @@ export default function RootNavigator() {
         <Stack.Screen name="OwnerDashboard" component={OwnerDashboardScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Payment" component={PaymentScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="WebViewPayment" component={WebViewPaymentScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} options={{ headerShown: false }} />
         <Stack.Screen name="RazorpayWebView" component={RazorpayWebViewScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -17,7 +17,7 @@ class PaymentService {
       // Create Razorpay order
       const orderResponse = await paymentAPI.createOrder(
         booking.booking_id || booking.id,
-        booking.total_amount * 100 // Convert to paise
+        booking.total_amount
       );
       
       if (!orderResponse.success) {

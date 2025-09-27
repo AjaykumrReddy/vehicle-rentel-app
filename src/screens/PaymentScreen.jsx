@@ -27,30 +27,8 @@ export default function PaymentScreen({ route, navigation }) {
     setPaymentStatus(status);
   };
 
-  const handlePayment = async () => {
-    setLoading(true);
-    
-    await PaymentService.initiatePayment(
-      booking,
-      (data) => {
-        setLoading(false);
-        Alert.alert(
-          'Payment Successful!',
-          'Your booking has been confirmed and payment completed.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('MyBookings')
-            }
-          ]
-        );
-      },
-      (error) => {
-        setLoading(false);
-        Alert.alert('Payment Failed', error);
-      },
-      navigation
-    );
+  const handlePayment = () => {
+    navigation.navigate('WebViewPayment', { booking });
   };
 
   const formatDateTime = (dateString) => {
@@ -180,15 +158,11 @@ export default function PaymentScreen({ route, navigation }) {
           <TouchableOpacity
             style={[styles.payButton, { backgroundColor: colors.primary }]}
             onPress={handlePayment}
-            disabled={loading}
+            disabled={false}
           >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.payButtonText}>
-                Pay ₹{booking.total_amount}
-              </Text>
-            )}
+            <Text style={styles.payButtonText}>
+              Pay ₹{booking.total_amount}
+            </Text>
           </TouchableOpacity>
         </View>
       )}

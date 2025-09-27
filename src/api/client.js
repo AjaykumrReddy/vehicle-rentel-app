@@ -20,6 +20,7 @@ const apiRequest = async (endpoint, options = {}) => {
     } catch (e) {
       data = null;
     }
+    console.log("data - ", data)
     return { success: response.ok, data, error: !response.ok ? data : null };
   } catch (error) {
     console.error('API request error:', error);

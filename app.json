@@ -22,7 +22,8 @@
             "minSdkVersion": 21
           }
         }
-      ]
+      ],
+      "expo-router"
     ]
   }
 }
