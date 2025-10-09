@@ -126,11 +126,13 @@ export default function BookingCard({ booking, onPress, onCancel, onChat, onPaym
       </View>
 
       {/* Status Message */}
-      <View style={[styles.statusSection, { backgroundColor: getStatusColor() + '10', borderTopColor: colors.border }]}>
-        <Text style={[styles.statusMessage, { color: getStatusColor() }]}>
-          {getStatusMessage()}
-        </Text>
-      </View>
+        <View style={[styles.statusSection, { backgroundColor: getStatusColor() + '10', borderTopColor: colors.border }]}>
+          <Text style={[styles.statusMessage, { color: getStatusColor() }]}>
+            {getStatusMessage()}
+          </Text>
+        </View>
+
+
 
       {/* Footer */}
       <View style={[styles.footer, { borderTopColor: colors.border }]}>
@@ -146,13 +148,13 @@ export default function BookingCard({ booking, onPress, onCancel, onChat, onPaym
         <View style={styles.actions}>
           {needsPayment && (
             <TouchableOpacity 
-              style={[styles.primaryAction, { backgroundColor: '#FF6B35' }]}
+              style={[styles.paymentAction, { backgroundColor: '#FF6B35' }]}
               onPress={(e) => {
                 e.stopPropagation();
                 onPayment();
               }}
             >
-              <Text style={styles.primaryActionText}>Pay Now</Text>
+              <Text style={styles.paymentActionText}>💳 Pay ₹{booking.total_amount}</Text>
             </TouchableOpacity>
           )}
           
@@ -197,7 +199,7 @@ export default function BookingCard({ booking, onPress, onCancel, onChat, onPaym
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
@@ -206,8 +208,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: 16,
-    paddingBottom: 12,
+    padding: 12,
+    paddingBottom: 8,
   },
   vehicleInfo: {
     flexDirection: 'row',
@@ -246,8 +248,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: 12,
+    paddingBottom: 8,
   },
   timeInfo: {
     flex: 1,
@@ -256,7 +258,7 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   timeLabel: {
     fontSize: 12,
@@ -289,8 +291,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderTopWidth: 1,
   },
   priceInfo: {
@@ -305,29 +307,31 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   statusSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
     borderTopWidth: 1,
   },
   statusMessage: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
-  primaryAction: {
+  paymentAction: {
     flex: 1,
-    paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryActionText: {
+  paymentActionText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 16,
   },
   secondaryAction: {
     paddingHorizontal: 16,

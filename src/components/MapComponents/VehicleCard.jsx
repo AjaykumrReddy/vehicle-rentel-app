@@ -1,11 +1,12 @@
-import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { TouchableOpacity, View, Text, StyleSheet, Linking, Alert, Platform } from 'react-native';
 import { calculateDistance } from '../../utils/mapUtils';
 import { parsePoint } from '../../utils/mapUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export default function VehicleCard({ vehicle, onPress, userLocation, navigation }) {
   const { colors } = useTheme();
+  const [showOwnerDetails, setShowOwnerDetails] = useState(false);
   const getVehicleIcon = (vehicle) => {
     const type = vehicle.vehicle_type.toLowerCase();
     if (type.includes('bike')) return '🏍️';
@@ -50,39 +51,119 @@ export default function VehicleCard({ vehicle, onPress, userLocation, navigation
 
   const { distance, walkTime } = getDistanceInfo();
 
+  const openDirections = async () => {
+    const coords = parsePoint(vehicle.location);
+    if (!coords) return;
+
+    if (Platform.OS === 'android') {
+      // Android: Use system intent to show all available map apps
+      const geoUrl = `geo:${coords.latitude},${coords.longitude}?q=${coords.latitude},${coords.longitude}(${vehicle.brand} ${vehicle.model})`;
+      
+      try {
+        const supported = await Linking.canOpenURL(geoUrl);
+        if (supported) {
+          await Linking.openURL(geoUrl);
+        } else {
+          // Fallback to Google Maps web
+          const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`;
+          await Linking.openURL(webUrl);
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Unable to open navigation app');
+      }
+    } else {
+      // iOS: Show options since iOS doesn't have system intent
+      const mapOptions = [
+        {
+          text: 'Apple Maps',
+          onPress: () => {
+            const url = `http://maps.apple.com/?daddr=${coords.latitude},${coords.longitude}`;
+            Linking.openURL(url);
+          }
+        },
+        {
+          text: 'Google Maps',
+          onPress: async () => {
+            const googleMapsUrl = `comgooglemaps://?daddr=${coords.latitude},${coords.longitude}`;
+            const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${coords.latitude},${coords.longitude}`;
+            
+            try {
+              const supported = await Linking.canOpenURL(googleMapsUrl);
+              if (supported) {
+                await Linking.openURL(googleMapsUrl);
+              } else {
+                await Linking.openURL(webUrl);
+              }
+            } catch (error) {
+              await Linking.openURL(webUrl);
+            }
+          }
+        },
+        { text: 'Cancel', style: 'cancel' }
+      ];
+
+      Alert.alert('Get Directions', 'Choose your preferred map app', mapOptions);
+    }
+  };
+
   return (
-    <TouchableOpacity style={[styles.vehicleCard, { borderBottomColor: colors.border }]} onPress={onPress}>
-      <View style={[styles.vehicleIcon, { backgroundColor: colors.background }]}>
-        <Text style={styles.vehicleEmoji}>{getVehicleIcon(vehicle)}</Text>
-      </View>
-      <View style={styles.vehicleInfo}>
-        <Text style={[styles.vehicleName, { color: colors.text }]}>{vehicle.brand} {vehicle.model}</Text>
-        <Text style={[styles.vehicleDistance, { color: colors.textSecondary }]}>{distance} away • {walkTime}</Text>
-        <View style={styles.vehicleStatus}>
-          <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
-          <Text style={[styles.statusText, { color: colors.textSecondary }]}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
+    <View style={[styles.vehicleCard, { borderBottomColor: colors.border }]}>
+      <TouchableOpacity style={styles.mainContent} onPress={onPress}>
+        <View style={[styles.vehicleIcon, { backgroundColor: colors.background }]}>
+          <Text style={styles.vehicleEmoji}>{getVehicleIcon(vehicle)}</Text>
         </View>
-      </View>
-      <View style={styles.vehiclePrice}>
-        <Text style={[styles.priceText, { color: colors.text }]}>₹50/hr</Text>
+        <View style={styles.vehicleInfo}>
+          <Text style={[styles.vehicleName, { color: colors.text }]}>{vehicle.brand} {vehicle.model}</Text>
+          <Text style={[styles.vehicleDistance, { color: colors.textSecondary }]}>{distance} away • {walkTime}</Text>
+          <View style={styles.vehicleStatus}>
+            <View style={[styles.statusDot, { backgroundColor: getMarkerColor(vehicle) }]} />
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>{vehicle.available ? 'Available' : 'Not Available'}</Text>
+          </View>
+          {showOwnerDetails && (
+            <View style={[styles.ownerDetails, { backgroundColor: colors.background }]}>
+              <Text style={[styles.ownerLabel, { color: colors.textSecondary }]}>Owner:</Text>
+              <Text style={[styles.ownerName, { color: colors.text }]}>{vehicle.owner_name || 'N/A'}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.actions}>
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.navigate('VehicleBooking', { vehicle })}
+          >
+            <Text style={styles.actionButtonText}>Book</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+      
+      <View style={styles.bottomActions}>
         <TouchableOpacity 
-          style={[styles.bookButton, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('VehicleBooking', { vehicle })}
+          style={[styles.secondaryButton, { borderColor: colors.border }]}
+          onPress={() => setShowOwnerDetails(!showOwnerDetails)}
         >
-          <Text style={styles.bookButtonText}>Book</Text>
+          <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>Owner Info</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.secondaryButton, { borderColor: colors.border }]}
+          onPress={openDirections}
+        >
+          <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>Directions</Text>
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   vehicleCard: {
-    flexDirection: 'row',
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  mainContent: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
   },
   vehicleIcon: {
     width: 50,
@@ -124,24 +205,52 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
-  vehiclePrice: {
+  ownerDetails: {
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 6,
+  },
+  ownerLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  ownerName: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  ownerPhone: {
+    fontSize: 12,
+  },
+  actions: {
     alignItems: 'flex-end',
   },
-  priceText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  bookButton: {
+  actionButton: {
     backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
-  bookButtonText: {
+  actionButtonText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+  },
+  bottomActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  secondaryButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

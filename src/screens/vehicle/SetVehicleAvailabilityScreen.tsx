@@ -103,14 +103,21 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
 
   const saveAvailability = async () => {
     if (slots.length === 0) {
-      Alert.alert('No Slots', 'Please add at least one availability slot.');
+      showWarning(
+        'No Slots',
+        'Please add at least one availability slot.',
+        [{ text: 'OK', onPress: () => {} }]
+      )
       return;
     }
 
     // Validate slots
     for (let slot of slots) {
       if (new Date(slot.start_datetime) >= new Date(slot.end_datetime)) {
-        Alert.alert('Invalid Time', 'End time must be after start time.');
+        showWarning(
+          'Invalid Time', 
+          'End time must be after start time.',
+          [{ text: 'OK', onPress: () => {} }])
         return;
       }
     }

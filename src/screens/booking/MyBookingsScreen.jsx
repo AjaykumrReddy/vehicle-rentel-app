@@ -109,7 +109,7 @@ export default function MyBookingsScreen({ navigation }) {
     );
   }
 
-  const filteredBookings = getFilteredBookings();
+  // const filteredBookings = getFilteredBookings();
 
   const renderFilterContent = (filterIndex) => {
     const filteredBookings = getFilteredBookings(filterIndex);
