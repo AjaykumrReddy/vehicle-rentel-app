@@ -20,7 +20,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BOTTOM_SHEET_MIN_HEIGHT = 120;
-const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.5;
+const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.7;
 
 export default function MapScreen({ navigation }) {
   const { colors } = useTheme();
@@ -89,8 +89,16 @@ export default function MapScreen({ navigation }) {
   const centerOnVehicle = (vehicle) => {
     const coords = parsePoint(vehicle.location);
     if (coords && mapRef.current) {
+      // Calculate offset to center in visible area (above bottom sheet)
+      const currentSheetHeight = lastGesture.current;
+      const offsetRatio = (currentSheetHeight / SCREEN_HEIGHT) * 0.40; // Move up by quarter of sheet ratio
+      
+      // Negative offset moves the center UP to visible area
+      const latOffset = -offsetRatio * 0.01;
+      
       mapRef.current.animateToRegion({
-        ...coords,
+        latitude: coords.latitude + latOffset,
+        longitude: coords.longitude,
         latitudeDelta: 0.005,
         longitudeDelta: 0.005,
       });
