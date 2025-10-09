@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,38 +7,68 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { setVehicleAvailabilitySlots } from '../../api/vehicleService';
+import { setVehicleAvailabilitySlots, getVehicleAvailabilitySlots, deleteVehicleAvailabilitySlot } from '../../api/vehicleService';
 import { useAlert } from '../../hooks/useAlert';
 import CustomAlert from '../../components/CustomAlert';
 import { useTheme } from '../../contexts/ThemeContext';
 
 
 interface TimeSlot {
+  id?: string;
   start_datetime: string;
   end_datetime: string;
   hourly_rate: number;
   daily_rate: number;
   min_rental_hours: number;
   max_rental_hours: number;
+  is_active?: boolean;
+  weekly_rate?: number | null;
 }
 
 export default function SetVehicleAvailabilityScreen({ navigation, route }: any) {
   const { colors } = useTheme();
   const { selectedVehicle } = route.params;
   const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [showHourPicker, setShowHourPicker] = useState(false);
   const [selectedHour, setSelectedHour] = useState(9);
   const [pickerMode, setPickerMode] = useState<'start' | 'end'>('start');
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [tempDate, setTempDate] = useState(new Date());
+  const [deletingSlotId, setDeletingSlotId] = useState<string | null>(null);
+  const [originalSlots, setOriginalSlots] = useState<TimeSlot[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
   const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
+
+  // Load existing availability slots
+  useEffect(() => {
+    loadExistingSlots();
+  }, []);
+
+  const loadExistingSlots = async () => {
+    try {
+      setLoading(true);
+      const response = await getVehicleAvailabilitySlots(selectedVehicle.id);
+      // Response is directly an array of slots
+      if (Array.isArray(response)) {
+        setSlots(response);
+        setOriginalSlots(JSON.parse(JSON.stringify(response))); // Deep copy
+      } else if (response.data && Array.isArray(response.data)) {
+        setSlots(response.data);
+        setOriginalSlots(JSON.parse(JSON.stringify(response.data))); // Deep copy
+      }
+    } catch (error) {
+      console.error('Error loading slots:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // UTC utility functions
   const createUTCDateTime = (date: Date, hour: number) => {
@@ -49,6 +79,12 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
 
   const parseUTCDateTime = (isoString: string) => {
     return new Date(isoString);
+  };
+
+  const checkForChanges = (updatedSlots: TimeSlot[]) => {
+    // Compare current slots with original slots
+    const hasRealChanges = JSON.stringify(updatedSlots) !== JSON.stringify(originalSlots);
+    setHasChanges(hasRealChanges);
   };
 
   const addNewSlot = () => {
@@ -66,17 +102,36 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
       max_rental_hours: 24,
     };
     
-    setSlots([...slots, newSlot]);
+    const newSlots = [...slots, newSlot];
+    setSlots(newSlots);
+    checkForChanges(newSlots);
   };
 
   const updateSlot = (index: number, field: keyof TimeSlot, value: any) => {
     const updatedSlots = [...slots];
     updatedSlots[index] = { ...updatedSlots[index], [field]: value };
     setSlots(updatedSlots);
+    checkForChanges(updatedSlots);
   };
 
   const removeSlot = (index: number) => {
-    setSlots(slots.filter((_, i) => i !== index));
+    const updatedSlots = slots.filter((_, i) => i !== index);
+    setSlots(updatedSlots);
+    checkForChanges(updatedSlots);
+  };
+
+  const deleteExistingSlot = async (slotId: string, index: number) => {
+    try {
+      setDeletingSlotId(slotId);
+      await deleteVehicleAvailabilitySlot(selectedVehicle.id, slotId);
+      removeSlot(index);
+      showSuccess('Slot Deleted', 'Availability slot removed successfully.');
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Cannot delete slot with active bookings.';
+      showError('Delete Failed', message);
+    } finally {
+      setDeletingSlotId(null);
+    }
   };
 
   const openDateTimePicker = (slotIndex: number, mode: 'start' | 'end') => {
@@ -210,8 +265,11 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Set Availability</Text>
-        <TouchableOpacity onPress={saveAvailability}>
-          <Text style={styles.saveText}>Save</Text>
+        <TouchableOpacity 
+          onPress={saveAvailability}
+          disabled={!hasChanges}
+        >
+          <Text style={[styles.saveText, !hasChanges && styles.saveTextDisabled]}>Save</Text>
         </TouchableOpacity>
       </View>
 
@@ -224,33 +282,84 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-        <Text style={styles.subtitle}>Configure when your vehicle is available for rent</Text>
+        <View style={styles.vehicleInfo}>
+          <Text style={[styles.vehicleName, { color: colors.text }]}>{selectedVehicle.brand} {selectedVehicle.model}</Text>
+          <Text style={[styles.vehicleReg, { color: colors.textSecondary }]}>{selectedVehicle.license_plate}</Text>
+        </View>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Configure when your vehicle is available for rent</Text>
+        
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading availability slots...</Text>
+          </View>
+        ) : slots.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>📅</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Availability Set</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>Add time slots to make your vehicle available for rent</Text>
+          </View>
+        ) : null}
 
-        {slots.map((slot, index) => (
-          <View key={index} style={styles.slotCard}>
+        {!loading && slots.map((slot, index) => {
+          const isExisting = slot.id; // Has ID means it's from backend
+          return (
+          <View key={index} style={[
+            styles.slotCard,
+            isExisting ? styles.existingSlot : styles.newSlot
+          ]}>
             <View style={styles.slotHeader}>
-              <Text style={styles.slotTitle}>Slot {index + 1}</Text>
-              <TouchableOpacity onPress={() => removeSlot(index)}>
-                <Text style={styles.removeText}>✕</Text>
-              </TouchableOpacity>
+              <View style={styles.slotTitleContainer}>
+                <Text style={styles.slotTitle}>
+                  {isExisting ? '📅 Existing' : '➕ New'} Slot {index + 1}
+                </Text>
+                {isExisting && <Text style={styles.existingBadge}>SAVED</Text>}
+              </View>
+              {isExisting ? (
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => {/* Edit functionality can be added later */}}
+                  >
+                    <Text style={styles.editButtonText}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.deleteButton, deletingSlotId === slot.id && styles.deleteButtonDisabled]}
+                    onPress={() => deleteExistingSlot(slot.id!, index)}
+                    disabled={deletingSlotId === slot.id}
+                  >
+                    {deletingSlotId === slot.id ? (
+                      <ActivityIndicator size="small" color="#ff4444" />
+                    ) : (
+                      <Text style={styles.deleteButtonText}>🗑️</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity onPress={() => removeSlot(index)}>
+                  <Text style={styles.removeText}>✕</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.timeSection}>
               <Text style={styles.label}>Time Period</Text>
               <View style={styles.timeRow}>
                 <TouchableOpacity 
-                  style={styles.timeButton}
-                  onPress={() => openDateTimePicker(index, 'start')}
+                  style={[styles.timeButton, isExisting && styles.disabledButton]}
+                  onPress={() => !isExisting && openDateTimePicker(index, 'start')}
+                  disabled={!!isExisting}
                 >
                   <Text style={styles.timeLabel}>From</Text>
-                  <Text style={styles.timeText}>{formatDateTime(slot.start_datetime)}</Text>
+                  <Text style={[styles.timeText, isExisting && styles.disabledText]}>{formatDateTime(slot.start_datetime)}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.timeButton}
-                  onPress={() => openDateTimePicker(index, 'end')}
+                  style={[styles.timeButton, isExisting && styles.disabledButton]}
+                  onPress={() => !isExisting && openDateTimePicker(index, 'end')}
+                  disabled={!!isExisting}
                 >
                   <Text style={styles.timeLabel}>To</Text>
-                  <Text style={styles.timeText}>{formatDateTime(slot.end_datetime)}</Text>
+                  <Text style={[styles.timeText, isExisting && styles.disabledText]}>{formatDateTime(slot.end_datetime)}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -261,21 +370,23 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
                 <View style={styles.rateInput}>
                   <Text style={styles.rateLabel}>Hourly Rate (₹)</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isExisting && styles.disabledInput]}
                     value={slot.hourly_rate.toString()}
-                    onChangeText={(text) => updateSlot(index, 'hourly_rate', parseFloat(text) || 0)}
+                    onChangeText={(text) => !isExisting && updateSlot(index, 'hourly_rate', parseFloat(text) || 0)}
                     keyboardType="numeric"
                     placeholder="25"
+                    editable={!isExisting}
                   />
                 </View>
                 <View style={styles.rateInput}>
                   <Text style={styles.rateLabel}>Daily Rate (₹)</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isExisting && styles.disabledInput]}
                     value={slot.daily_rate.toString()}
-                    onChangeText={(text) => updateSlot(index, 'daily_rate', parseFloat(text) || 0)}
+                    onChangeText={(text) => !isExisting && updateSlot(index, 'daily_rate', parseFloat(text) || 0)}
                     keyboardType="numeric"
                     placeholder="200"
+                    editable={!isExisting}
                   />
                 </View>
               </View>
@@ -287,27 +398,30 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
                 <View style={styles.rateInput}>
                   <Text style={styles.rateLabel}>Min Hours</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isExisting && styles.disabledInput]}
                     value={slot.min_rental_hours.toString()}
-                    onChangeText={(text) => updateSlot(index, 'min_rental_hours', parseInt(text) || 1)}
+                    onChangeText={(text) => !isExisting && updateSlot(index, 'min_rental_hours', parseInt(text) || 1)}
                     keyboardType="numeric"
                     placeholder="2"
+                    editable={!isExisting}
                   />
                 </View>
                 <View style={styles.rateInput}>
                   <Text style={styles.rateLabel}>Max Hours</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isExisting && styles.disabledInput]}
                     value={slot.max_rental_hours.toString()}
-                    onChangeText={(text) => updateSlot(index, 'max_rental_hours', parseInt(text) || 24)}
+                    onChangeText={(text) => !isExisting && updateSlot(index, 'max_rental_hours', parseInt(text) || 24)}
                     keyboardType="numeric"
                     placeholder="24"
+                    editable={!isExisting}
                   />
                 </View>
               </View>
             </View>
           </View>
-        ))}
+        );
+        })}
 
         <TouchableOpacity style={styles.addSlotButton} onPress={addNewSlot}>
           <Text style={styles.addSlotText}>+ Add Time Slot</Text>
@@ -396,13 +510,28 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: '600',
   },
+  saveTextDisabled: {
+    color: '#999',
+  },
   content: {
     flex: 1,
     padding: 20,
   },
+  vehicleInfo: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  vehicleName: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  vehicleReg: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
   subtitle: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -417,11 +546,57 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  existingSlot: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#28a745',
+    backgroundColor: '#f8fff9',
+  },
+  newSlot: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#007bff',
+    backgroundColor: '#f8fbff',
+  },
   slotHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  slotTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  existingBadge: {
+    fontSize: 10,
+    color: '#28a745',
+    backgroundColor: '#d4edda',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    padding: 4,
+  },
+  editButtonText: {
+    fontSize: 16,
+  },
+  deleteButton: {
+    padding: 4,
+    minWidth: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonDisabled: {
+    opacity: 0.6,
+  },
+  deleteButtonText: {
+    fontSize: 16,
   },
   slotTitle: {
     fontSize: 16,
@@ -486,6 +661,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: '#fff',
   },
+  disabledInput: {
+    backgroundColor: '#f5f5f5',
+    color: '#999',
+  },
+  disabledButton: {
+    backgroundColor: '#f5f5f5',
+  },
+  disabledText: {
+    color: '#999',
+  },
   limitsSection: {
     marginBottom: 0,
   },
@@ -501,6 +686,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   hourPickerModal: {
     position: 'absolute',

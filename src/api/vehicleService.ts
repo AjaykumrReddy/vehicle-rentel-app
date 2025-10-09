@@ -148,3 +148,18 @@ export const getVehicleAvailabilitySlots = async (vehicleId: string) => {
   }
 }
 
+// Delete Vehicle Availability Slot
+export const deleteVehicleAvailabilitySlot = async (vehicleId: string, slotId: string) => {
+  try{
+    const token = await getAuthToken();
+    const response = await api.delete(`/vehicles/${vehicleId}/availability_slots/${slotId}`,{
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    console.log('Delete vehicle availability slot response:', response.data);
+    return response.data;
+  }catch(error){
+    console.error('Delete vehicle availability slot error:', error);
+    throw error;
+  }
+}
+
