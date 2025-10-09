@@ -44,6 +44,7 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
   const [deletingSlotId, setDeletingSlotId] = useState<string | null>(null);
   const [originalSlots, setOriginalSlots] = useState<TimeSlot[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
 
   // Load existing availability slots
@@ -230,10 +231,12 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
       }
     }
 
-    const payload = { slots };
+    // Only save new slots (without ID)
+    const newSlots = slots.filter(slot => !slot.id);
+    const payload = { slots: newSlots };
     console.log('Saving availability:', payload);
-    // API call would go here
     try{
+      setSaving(true);
       await setVehicleAvailabilitySlots(selectedVehicle.id, payload);
       showSuccess(
         'Availability Saved', 
@@ -246,6 +249,8 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
           ? 'Please check your internet connection and try again.'
           : 'Failed to save availability. Please try again.');
       showError('Save Failed', message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -267,9 +272,14 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
         <Text style={styles.headerTitle}>Set Availability</Text>
         <TouchableOpacity 
           onPress={saveAvailability}
-          disabled={!hasChanges}
+          disabled={!hasChanges || saving}
+          style={styles.saveButton}
         >
-          <Text style={[styles.saveText, !hasChanges && styles.saveTextDisabled]}>Save</Text>
+          {saving ? (
+            <ActivityIndicator size="small" color="#007AFF" />
+          ) : (
+            <Text style={[styles.saveText, (!hasChanges || saving) && styles.saveTextDisabled]}>Save</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -512,6 +522,11 @@ const styles = StyleSheet.create({
   },
   saveTextDisabled: {
     color: '#999',
+  },
+  saveButton: {
+    minWidth: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
