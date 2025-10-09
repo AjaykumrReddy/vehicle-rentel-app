@@ -33,18 +33,33 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showHourPicker, setShowHourPicker] = useState(false);
+  const [selectedHour, setSelectedHour] = useState(9);
   const [pickerMode, setPickerMode] = useState<'start' | 'end'>('start');
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [tempDate, setTempDate] = useState(new Date());
   const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
 
+  // UTC utility functions
+  const createUTCDateTime = (date: Date, hour: number) => {
+    const utcDate = new Date(date);
+    utcDate.setUTCHours(hour, 0, 0, 0);
+    return utcDate.toISOString();
+  };
+
+  const parseUTCDateTime = (isoString: string) => {
+    return new Date(isoString);
+  };
+
   const addNewSlot = () => {
     const now = new Date();
-    const endTime = new Date(now.getTime() + 8 * 60 * 60 * 1000); // 8 hours later
+    const currentHour = now.getUTCHours();
+    const nextHour = currentHour + 1;
+    const endHour = currentHour + 9; // 8 hours later
     
     const newSlot: TimeSlot = {
-      start_datetime: now.toISOString(),
-      end_datetime: endTime.toISOString(),
+      start_datetime: createUTCDateTime(now, nextHour),
+      end_datetime: createUTCDateTime(now, endHour),
       hourly_rate: 25,
       daily_rate: 200,
       min_rental_hours: 2,
@@ -78,27 +93,43 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
     if (selectedDate) {
       setTempDate(selectedDate);
       setShowDatePicker(false);
-      setShowTimePicker(true);
+      setShowHourPicker(true);
     } else {
       setShowDatePicker(false);
     }
   };
 
-  const handleTimeChange = (event: any, selectedTime?: Date) => {
-    setShowTimePicker(false);
-    if (selectedTime) {
-      const newDateTime = new Date(tempDate);
-      newDateTime.setHours(selectedTime.getHours());
-      newDateTime.setMinutes(selectedTime.getMinutes());
+  const handleHourSelect = (hour: number) => {
+    // Create UTC datetime to ensure consistent timezone handling
+    const utcDateTime = createUTCDateTime(tempDate, hour);
+    
+    const field = pickerMode === 'start' ? 'start_datetime' : 'end_datetime';
+    updateSlot(currentSlotIndex, field, utcDateTime);
+    setShowHourPicker(false);
+  };
+
+  const generateHourOptions = () => {
+    const hours = [];
+    const now = new Date();
+    const isToday = tempDate.toDateString() === now.toDateString();
+    const currentHour = now.getHours();
+    
+    for (let i = 0; i < 24; i++) {
+      // Skip past hours for today's date
+      if (isToday && i <= currentHour) {
+        continue;
+      }
       
-      const field = pickerMode === 'start' ? 'start_datetime' : 'end_datetime';
-      updateSlot(currentSlotIndex, field, newDateTime.toISOString());
+      const hour12 = i === 0 ? 12 : i > 12 ? i - 12 : i;
+      const ampm = i < 12 ? 'AM' : 'PM';
+      hours.push({ value: i, label: `${hour12} ${ampm}` });
     }
+    return hours;
   };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: undefined, hour12: true });
   };
 
   const saveAvailability = async () => {
@@ -112,13 +143,35 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
     }
 
     // Validate slots
-    for (let slot of slots) {
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      
+      // Check if end time is after start time
       if (new Date(slot.start_datetime) >= new Date(slot.end_datetime)) {
         showWarning(
           'Invalid Time', 
-          'End time must be after start time.',
+          `Slot ${i + 1}: End time must be after start time.`,
           [{ text: 'OK', onPress: () => {} }])
         return;
+      }
+      
+      // Check for overlapping slots
+      for (let j = i + 1; j < slots.length; j++) {
+        const otherSlot = slots[j];
+        const slot1Start = new Date(slot.start_datetime);
+        const slot1End = new Date(slot.end_datetime);
+        const slot2Start = new Date(otherSlot.start_datetime);
+        const slot2End = new Date(otherSlot.end_datetime);
+        
+        // Check if slots overlap
+        if ((slot1Start < slot2End && slot1End > slot2Start)) {
+          showWarning(
+            'Overlapping Slots',
+            `Slot ${i + 1} and Slot ${j + 1} have overlapping times. Please adjust the time periods.`,
+            [{ text: 'OK', onPress: () => {} }]
+          )
+          return;
+        }
       }
     }
 
@@ -272,13 +325,39 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
         />
       )}
 
-      {showTimePicker && (
-        <DateTimePicker
-          value={tempDate}
-          mode="time"
-          display="default"
-          onChange={handleTimeChange}
-        />
+      {showHourPicker && (
+        <View style={styles.hourPickerModal}>
+          <View style={styles.hourPickerContent}>
+            <Text style={styles.hourPickerTitle}>Select Hour</Text>
+            <ScrollView style={styles.hourList} showsVerticalScrollIndicator={false}>
+              {generateHourOptions().map((hour) => (
+                <TouchableOpacity 
+                  key={hour.value}
+                  style={[styles.hourOption, selectedHour === hour.value && styles.hourOptionSelected]}
+                  onPress={() => setSelectedHour(hour.value)}
+                >
+                  <Text style={[styles.hourOptionText, selectedHour === hour.value && styles.hourOptionTextSelected]}>
+                    {hour.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <View style={styles.hourPickerButtons}>
+              <TouchableOpacity 
+                style={styles.hourPickerButton}
+                onPress={() => setShowHourPicker(false)}
+              >
+                <Text style={styles.hourPickerButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.hourPickerButton, styles.hourPickerConfirm]}
+                onPress={() => handleHourSelect(selectedHour)}
+              >
+                <Text style={[styles.hourPickerButtonText, styles.hourPickerConfirmText]}>Select</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -416,11 +495,80 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 8,
-    marginBottom:50,
+    marginBottom: 50,
   },
   addSlotText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  hourPickerModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hourPickerContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
+  },
+  hourPickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#333',
+  },
+  hourList: {
+    maxHeight: 200,
+    marginBottom: 16,
+  },
+  hourOption: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  hourOptionSelected: {
+    backgroundColor: '#007AFF',
+  },
+  hourOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  hourOptionTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  hourPickerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  hourPickerButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+  },
+  hourPickerConfirm: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  hourPickerButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  hourPickerConfirmText: {
+    color: '#fff',
   },
 });
