@@ -100,7 +100,8 @@ export default function SearchScreen({ navigation, route }) {
     navigation.navigate('VehicleResults', {
       location: selectedLocation,
       startDate: pickupDateTime.toISOString(),
-      endDate: dropoffDateTime.toISOString()
+      endDate: dropoffDateTime.toISOString(),
+      radiusKm: 10 //  by defualt update dynamic later
     });
   };
 

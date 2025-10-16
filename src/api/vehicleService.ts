@@ -164,3 +164,22 @@ export const deleteVehicleAvailabilitySlot = async (vehicleId: string, slotId: s
   }
 }
 
+// Search Vehicles
+export const searchVehicles = async (latitude: number, longitude: number, startDateTime: string, endDateTime: string, radiusKm: number = 10) => {
+  try {
+    const response = await api.get('/vehicles/search', {
+      params: {
+        lat: latitude,
+        lng: longitude,
+        start_datetime: startDateTime,
+        end_datetime: endDateTime,
+        radius_km: radiusKm
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Vehicle search error:', error);
+    throw error;
+  }
+}
+

@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../screens/common/SplashScreen';
 import OnboardingScreen from '../screens/common/OnboardingScreen';
 import SearchScreen from '../screens/common/SearchScreen';
+import VehicleResultsScreen from '../screens/common/VehicleResultsScreen';
 import MapScreen from '../screens/common/MapScreen';
 import LocationPickerScreen from '../screens/common/LocationPickerScreen';
 
@@ -39,6 +40,7 @@ export default function RootNavigator() {
         <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="VehicleResults" component={VehicleResultsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="LocationPicker" component={LocationPickerScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
