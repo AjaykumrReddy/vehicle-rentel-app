@@ -27,7 +27,7 @@ export default function VehicleBookingScreen({ route, navigation }) {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectingStart, setSelectingStart] = useState(true);
+  const [currentStep, setCurrentStep] = useState('startDate'); // startDate, startTime, endDate, endTime
   const [loading, setLoading] = useState(false);
   const [fetchingSlots, setFetchingSlots] = useState(true);
   const { alertConfig, visible, hideAlert, showError, showSuccess, showWarning } = useAlert();
@@ -51,15 +51,17 @@ export default function VehicleBookingScreen({ route, navigation }) {
   }, []);
 
   const handleDateSelect = (date, hours) => {
-    if (selectingStart) {
+    if (currentStep === 'startDate') {
       setStartDate(date);
       setStartTime(null);
       setEndDate(null);
       setEndTime(null);
       setSelectedSlot(null);
-    } else {
+      setCurrentStep('startTime');
+    } else if (currentStep === 'endDate') {
       setEndDate(date);
       setEndTime(null);
+      setCurrentStep('endTime');
     }
   };
 
@@ -68,10 +70,17 @@ export default function VehicleBookingScreen({ route, navigation }) {
     setSelectedSlot(slot);
     setEndTime(null);
     setEndDate(null);
+    setCurrentStep('endDate');
   };
 
   const handleEndTimeSelect = (hour) => {
     setEndTime(hour);
+    setCurrentStep('complete');
+  };
+
+  const handleSameDayBooking = () => {
+    setEndDate(null);
+    setCurrentStep('endTime');
   };
 
   const getAvailableHoursForDate = (date) => {
@@ -120,34 +129,46 @@ export default function VehicleBookingScreen({ route, navigation }) {
   };
 
   const isValidBooking = () => {
+    return getBookingValidationError() === null;
+  };
+
+  const isBookingWithinAvailability = (startDateTime, endDateTime) => {
+    // Find all slots that overlap with the booking period
+    const overlappingSlots = availabilitySlots.filter(slot => {
+      const slotStart = new Date(slot.start_datetime);
+      const slotEnd = new Date(slot.end_datetime);
+      return startDateTime < slotEnd && endDateTime > slotStart;
+    });
     
-    if (!startDate || startTime === null || endTime === null || !selectedSlot) {
+    if (overlappingSlots.length === 0) return false;
+    
+    // Sort slots by start time
+    overlappingSlots.sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime));
+    
+    // Check if there are gaps in coverage
+    let currentTime = startDateTime;
+    
+    for (const slot of overlappingSlots) {
+      const slotStart = new Date(slot.start_datetime);
+      const slotEnd = new Date(slot.end_datetime);
+      
+      // If there's a gap before this slot starts
+      if (currentTime < slotStart) {
+        console.log('Gap found:', currentTime, 'to', slotStart);
+        return false;
+      }
+      
+      // Move current time to the end of this slot
+      currentTime = new Date(Math.max(currentTime, slotEnd));
+    }
+    
+    // Check if the last slot covers until the end of booking
+    if (currentTime < endDateTime) {
+      console.log('Booking extends beyond availability:', currentTime, 'to', endDateTime);
       return false;
     }
     
-    const startDateTime = new Date(startDate);
-    startDateTime.setHours(startTime);
-    
-    const endDateTime = new Date(endDate || startDate);
-    endDateTime.setHours(endTime);
-    
-    const hours = (endDateTime - startDateTime) / (1000 * 60 * 60);
-    
-    // For cross-date bookings, only check minimum hours
-    // For same-day bookings, check both min and max
-    const isValid = endDate 
-      ? hours >= selectedSlot.min_rental_hours 
-      : hours >= selectedSlot.min_rental_hours && hours <= selectedSlot.max_rental_hours;
-    
-    console.log('Duration validation:', {
-      hours: hours,
-      minHours: selectedSlot.min_rental_hours,
-      maxHours: selectedSlot.max_rental_hours,
-      isCrossDate: !!endDate,
-      isValid: isValid
-    });
-    
-    return isValid;
+    return true;
   };
 
   const formatTime = (hour) => {
@@ -244,9 +265,47 @@ export default function VehicleBookingScreen({ route, navigation }) {
     return '🛺';
   };
 
+  const getBookingValidationError = () => {
+    if (!startDate || startTime === null) {
+      return 'Please select start date and time';
+    }
+    
+    if (endTime === null) {
+      return 'Please select end time';
+    }
+    
+    if (!selectedSlot) {
+      return 'Please select a valid time slot';
+    }
+    
+    const startDateTime = new Date(startDate);
+    startDateTime.setHours(startTime);
+    
+    const endDateTime = new Date(endDate || startDate);
+    endDateTime.setHours(endTime);
+    
+    // Check if booking spans across availability gaps
+    if (!isBookingWithinAvailability(startDateTime, endDateTime)) {
+      return 'Selected time period has gaps in availability. Please choose a continuous available period.';
+    }
+    
+    const hours = (endDateTime - startDateTime) / (1000 * 60 * 60);
+    
+    if (hours < selectedSlot.min_rental_hours) {
+      return `Minimum rental duration is ${selectedSlot.min_rental_hours} hours`;
+    }
+    
+    if (!endDate && hours > selectedSlot.max_rental_hours) {
+      return `Maximum same-day rental duration is ${selectedSlot.max_rental_hours} hours`;
+    }
+    
+    return null;
+  };
+
   const handleBooking = async () => {
-    if (!isValidBooking()) {
-      Alert.alert('Error', 'Please complete your booking selection');
+    const validationError = getBookingValidationError();
+    if (validationError) {
+      Alert.alert('Booking Error', validationError);
       return;
     }
 
@@ -330,6 +389,41 @@ export default function VehicleBookingScreen({ route, navigation }) {
           </View>
         </View>
 
+        {/* Booking Progress */}
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Booking Steps</Text>
+          <View style={styles.progressContainer}>
+            <View style={[styles.progressStep, startDate && startTime !== null ? styles.progressStepComplete : styles.progressStepActive]}>
+              <Text style={[styles.progressStepText, { color: startDate && startTime !== null ? '#fff' : colors.text }]}>1</Text>
+            </View>
+            <View style={[styles.progressLine, startDate && startTime !== null ? styles.progressLineComplete : null]} />
+            <View style={[styles.progressStep, endTime !== null ? styles.progressStepComplete : (startDate && startTime !== null ? styles.progressStepActive : styles.progressStepInactive)]}>
+              <Text style={[styles.progressStepText, { color: endTime !== null ? '#fff' : colors.text }]}>2</Text>
+            </View>
+            <View style={[styles.progressLine, endTime !== null ? styles.progressLineComplete : null]} />
+            <View style={[styles.progressStep, isValidBooking() ? styles.progressStepComplete : styles.progressStepInactive]}>
+              <Text style={[styles.progressStepText, { color: isValidBooking() ? '#fff' : colors.text }]}>3</Text>
+            </View>
+          </View>
+          <View style={styles.progressLabels}>
+            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Start</Text>
+            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>End</Text>
+            <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Book</Text>
+          </View>
+        </View>
+
+        {/* Current Step Guidance */}
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.guidanceText, { color: colors.text }]}>
+            {currentStep === 'startDate' ? '📅 Select start date' :
+             currentStep === 'startTime' ? '⏰ Select start time' :
+             currentStep === 'endDate' ? '📅 Select end date (or choose same-day)' :
+             currentStep === 'endTime' ? '⏰ Select end time' :
+             !isValidBooking() ? '⚠️ Please check your selection - there may be gaps in availability' :
+             '✅ Ready to book!'}
+          </Text>
+        </View>
+
         {/* Availability Slots */}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Available Periods</Text>
@@ -378,50 +472,43 @@ export default function VehicleBookingScreen({ route, navigation }) {
           )}
         </View>
 
-        {/* Date Selection */}
-        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.dateToggle}>
-            <TouchableOpacity 
-              style={[styles.toggleButton, { backgroundColor: selectingStart ? colors.primary : colors.background, borderColor: colors.border }]}
-              onPress={() => setSelectingStart(true)}
-            >
-              <Text style={[styles.toggleText, { color: selectingStart ? '#fff' : colors.text }]}>Start Date</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.toggleButton, { backgroundColor: !selectingStart ? colors.primary : colors.background, borderColor: colors.border }]}
-              onPress={() => setSelectingStart(false)}
-            >
-              <Text style={[styles.toggleText, { color: !selectingStart ? '#fff' : colors.text }]}>End Date</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-            {selectingStart ? 'Select start date' : 'Select end date (optional for same-day booking)'}
-          </Text>
-          
-          <CalendarPicker 
-            availabilitySlots={availabilitySlots}
-            onDateTimeSelect={handleDateSelect}
-            selectedStart={selectingStart ? startDate : endDate}
-          />
-          
-          {startDate && (
-            <View style={styles.selectedDates}>
-              <Text style={[styles.selectedDateText, { color: colors.text }]}>
-                Start: {formatDate(startDate)} {startTime !== null && `at ${formatTime(startTime)}`}
-              </Text>
-              {endDate && (
-                <Text style={[styles.selectedDateText, { color: colors.text }]}>
-                  End: {formatDate(endDate)} {endTime !== null && `at ${formatTime(endTime)}`}
-                </Text>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* Start Time Selection */}
-        {startDate && (
+        {/* Step 1: Start Date Selection */}
+        {currentStep === 'startDate' && (
           <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Select Start Date</Text>
+            <CalendarPicker 
+              availabilitySlots={availabilitySlots}
+              onDateTimeSelect={handleDateSelect}
+              selectedStart={startDate}
+            />
+          </View>
+        )}
+
+        {/* Step 3: End Date Selection */}
+        {currentStep === 'endDate' && (
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Select End Date</Text>
+            <TouchableOpacity 
+              style={[styles.sameDayButton, { backgroundColor: colors.primary }]}
+              onPress={handleSameDayBooking}
+            >
+              <Text style={styles.sameDayButtonText}>Same Day Booking</Text>
+            </TouchableOpacity>
+            <Text style={[styles.orText, { color: colors.textSecondary }]}>or select different date:</Text>
+            <CalendarPicker 
+              availabilitySlots={availabilitySlots}
+              onDateTimeSelect={handleDateSelect}
+              selectedStart={endDate}
+              minDate={startDate}
+            />
+          </View>
+        )}
+
+        {/* Step 2: Start Time Selection */}
+        {currentStep === 'startTime' && (
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Select Start Time</Text>
+            <Text style={[styles.selectedInfo, { color: colors.textSecondary }]}>Date: {formatDate(startDate)}</Text>
             <TimePicker 
               availableHours={getAvailableHoursForDate(startDate)}
               selectedTime={startTime}
@@ -431,14 +518,13 @@ export default function VehicleBookingScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* End Time Selection */}
-        {startTime !== null && (
+        {/* Step 4: End Time Selection */}
+        {currentStep === 'endTime' && (
           <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {!endDate && (
-              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, marginBottom: 12 }]}>
-                Same-day booking or select end date above for multi-day rental
-              </Text>
-            )}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Select End Time</Text>
+            <Text style={[styles.selectedInfo, { color: colors.textSecondary }]}>
+              Date: {formatDate(endDate || startDate)}
+            </Text>
             <TimePicker 
               availableHours={getEndTimeOptions()}
               selectedTime={endTime}
@@ -449,7 +535,7 @@ export default function VehicleBookingScreen({ route, navigation }) {
         )}
 
         {/* Booking Summary & Price */}
-        {startDate && startTime !== null && endTime !== null && (
+        {currentStep === 'complete' && (
           <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Booking Summary</Text>
             
@@ -686,5 +772,83 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 16,
+  },
+  progressStep: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#f5f5f5',
+  },
+  progressStepActive: {
+    borderColor: '#007AFF',
+    backgroundColor: '#fff',
+  },
+  progressStepComplete: {
+    borderColor: '#28a745',
+    backgroundColor: '#28a745',
+  },
+  progressStepInactive: {
+    borderColor: '#e0e0e0',
+    backgroundColor: '#f5f5f5',
+  },
+  progressStepText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  progressLine: {
+    width: 40,
+    height: 2,
+    backgroundColor: '#e0e0e0',
+    marginHorizontal: 8,
+  },
+  progressLineComplete: {
+    backgroundColor: '#28a745',
+  },
+  progressLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  progressLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+    flex: 1,
+  },
+  guidanceText: {
+    fontSize: 16,
+    textAlign: 'center',
+    paddingVertical: 12,
+    fontWeight: '500',
+  },
+  sameDayButton: {
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sameDayButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  orText: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginBottom: 12,
+  },
+  selectedInfo: {
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
   },
 });

@@ -13,7 +13,7 @@ export default function SplashScreen({ navigation }: { navigation: any }) {
       
       setTimeout(() => {
         if (token) {
-          navigation.replace('Map');
+          navigation.replace('Search');
         } else {
           navigation.replace('Onboarding');
         }
