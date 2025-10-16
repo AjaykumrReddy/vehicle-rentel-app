@@ -5,9 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // Common screens
 import SplashScreen from '../screens/common/SplashScreen';
 import OnboardingScreen from '../screens/common/OnboardingScreen';
-import SearchScreen from '../screens/SearchScreen';
-import LocationPickerScreen from '../screens/LocationPickerScreen';
+import SearchScreen from '../screens/common/SearchScreen';
 import MapScreen from '../screens/common/MapScreen';
+import LocationPickerScreen from '../screens/common/LocationPickerScreen';
 
 // Auth screens
 import { LoginScreen, OTPVerificationScreen, SignupScreen } from '../screens/auth';

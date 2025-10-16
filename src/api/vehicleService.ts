@@ -28,6 +28,7 @@ export async function getNearbyVehicles(
 ): Promise<Vehicle[]> {
   try {
     const token = await getAuthToken();
+    console.log('Token:', token)
     const response = await api.get('/vehicles/nearby', {
       params: { lat, lng, radius_km },
       headers: { 'Authorization': `Bearer ${token}` },

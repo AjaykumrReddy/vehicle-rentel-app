@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import useLocation from '../hooks/useLocation';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '../../contexts/ThemeContext';
+import useLocation from '../../hooks/useLocation';
+import { EXTERNAL_APIS } from '../../config/externalApis';
+import DateRangePicker from '../../components/DateRangePicker';
+import HourPicker from '../../components/HourPicker';
 
 export default function SearchScreen({ navigation, route }) {
   const { colors } = useTheme();
@@ -12,15 +14,20 @@ export default function SearchScreen({ navigation, route }) {
   const [addressLoading, setAddressLoading] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [pickupHour, setPickupHour] = useState(9); // 9 AM
+  const [dropoffHour, setDropoffHour] = useState(17); // 5 PM
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerStep, setDatePickerStep] = useState('start'); // 'start' or 'end'
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [timePickerMode, setTimePickerMode] = useState('pickup'); // 'pickup' or 'dropoff'
+  const [dateRangeSelected, setDateRangeSelected] = useState(false);
 
   // Reverse geocoding function using free Nominatim API
   const getAddressFromCoords = async (latitude, longitude) => {
     try {
       setAddressLoading(true);
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`,
+        `${EXTERNAL_APIS.OPENSTREETMAP.REVERSE_GEOCODE}?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`,
         {
           headers: {
             'User-Agent': 'VehicleRentalApp/1.0'
@@ -72,16 +79,28 @@ export default function SearchScreen({ navigation, route }) {
     }
   }, [route.params?.selectedLocation]);
 
-  const handleSearch = () => {
+  const handleVehiclesSearch = () => {
     if (!selectedLocation) {
       alert('Please select a pickup location');
       return;
     }
     
+    if (!dateRangeSelected) {
+      alert('Please select pickup and return dates');
+      return;
+    }
+    
+    // Combine date and time
+    const pickupDateTime = new Date(startDate);
+    pickupDateTime.setHours(pickupHour, 0, 0, 0);
+    
+    const dropoffDateTime = new Date(endDate);
+    dropoffDateTime.setHours(dropoffHour, 0, 0, 0);
+    
     navigation.navigate('VehicleResults', {
       location: selectedLocation,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
+      startDate: pickupDateTime.toISOString(),
+      endDate: dropoffDateTime.toISOString()
     });
   };
 
@@ -116,39 +135,58 @@ export default function SearchScreen({ navigation, route }) {
           </Text>
         </TouchableOpacity>
 
-        {/* Date Inputs */}
-        <View style={styles.dateRow}>
-          <TouchableOpacity 
-            style={[styles.dateInput, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => setShowStartPicker(true)}
-          >
-            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>🗓️ Start</Text>
-            <Text style={[styles.dateText, { color: colors.text }]}>
-              {startDate.toLocaleDateString()}
-            </Text>
-            <Text style={[styles.timeText, { color: colors.textSecondary }]}>
-              {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </TouchableOpacity>
+        {/* Date Range Input */}
+        <TouchableOpacity 
+          style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => {
+            setDatePickerStep('start');
+            setShowDatePicker(true);
+          }}
+        >
+          <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>🗓️ Select Dates</Text>
+          <Text style={[styles.inputValue, { color: dateRangeSelected ? colors.text : colors.textSecondary }]}>
+            {dateRangeSelected 
+              ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+              : 'Choose pickup and return dates'
+            }
+          </Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.dateInput, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => setShowEndPicker(true)}
-          >
-            <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>🏁 End</Text>
-            <Text style={[styles.dateText, { color: colors.text }]}>
-              {endDate.toLocaleDateString()}
-            </Text>
-            <Text style={[styles.timeText, { color: colors.textSecondary }]}>
-              {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Time Inputs - Only show after date range is selected */}
+        {dateRangeSelected && (
+          <View style={styles.timeRow}>
+            <TouchableOpacity 
+              style={[styles.timeInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => {
+                setTimePickerMode('pickup');
+                setShowTimePicker(true);
+              }}
+            >
+              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>⏰ Pickup Time</Text>
+              <Text style={[styles.timeText, { color: colors.text }]}>
+                {pickupHour === 0 ? '12 AM' : pickupHour < 12 ? `${pickupHour} AM` : pickupHour === 12 ? '12 PM' : `${pickupHour - 12} PM`}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.timeInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => {
+                setTimePickerMode('dropoff');
+                setShowTimePicker(true);
+              }}
+            >
+              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>🏁 Dropoff Time</Text>
+              <Text style={[styles.timeText, { color: colors.text }]}>
+                {dropoffHour === 0 ? '12 AM' : dropoffHour < 12 ? `${dropoffHour} AM` : dropoffHour === 12 ? '12 PM' : `${dropoffHour - 12} PM`}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Search Button */}
         <TouchableOpacity 
           style={[styles.searchButton, { backgroundColor: colors.primary }]}
-          onPress={handleSearch}
+          onPress={handleVehiclesSearch}
         >
           <Text style={styles.searchButtonText}>🔍 Search Vehicles</Text>
         </TouchableOpacity>
@@ -166,26 +204,38 @@ export default function SearchScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* Date Pickers */}
-      {showStartPicker && (
-        <DateTimePicker
-          value={startDate}
-          mode="datetime"
-          onChange={(event, date) => {
-            setShowStartPicker(false);
-            if (date) setStartDate(date);
-          }}
-        />
+      {/* Custom Date Range Picker */}
+      {showDatePicker && (
+        <View style={[styles.modalOverlay, { backgroundColor: colors.background }]}>
+          <DateRangePicker
+            onDateRangeSelect={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+              setDateRangeSelected(true);
+              setShowDatePicker(false);
+            }}
+            onCancel={() => setShowDatePicker(false)}
+          />
+        </View>
       )}
-      {showEndPicker && (
-        <DateTimePicker
-          value={endDate}
-          mode="datetime"
-          onChange={(event, date) => {
-            setShowEndPicker(false);
-            if (date) setEndDate(date);
-          }}
-        />
+
+      {/* Hour Picker */}
+      {showTimePicker && (
+        <View style={[styles.modalOverlay, { backgroundColor: colors.background }]}>
+          <HourPicker
+            selectedHour={timePickerMode === 'pickup' ? pickupHour : dropoffHour}
+            onHourSelect={(hour) => {
+              if (timePickerMode === 'pickup') {
+                setPickupHour(hour);
+              } else {
+                setDropoffHour(hour);
+              }
+              setShowTimePicker(false);
+            }}
+            onCancel={() => setShowTimePicker(false)}
+            title={timePickerMode === 'pickup' ? '⏰ Select Pickup Hour' : '🏁 Select Dropoff Hour'}
+          />
+        </View>
       )}
     </ScrollView>
   );
@@ -215,10 +265,59 @@ const styles = StyleSheet.create({
   inputContainer: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
   inputLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
   inputValue: { fontSize: 16, fontWeight: '500' },
-  dateRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  dateInput: { flex: 1, padding: 16, borderRadius: 12, borderWidth: 1 },
-  dateText: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
-  timeText: { fontSize: 12 },
+  timeRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  timeInput: { flex: 1, padding: 16, borderRadius: 12, borderWidth: 1 },
+  timeText: { fontSize: 14, fontWeight: '600', color: '#333' },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 50,
+    zIndex: 1000,
+  },
+  modalContent: {
+    margin: 20,
+    borderRadius: 12,
+    padding: 20,
+    minWidth: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  selectedStartInfo: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  confirmButton: {
+    borderWidth: 0,
+  },
+  modalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   searchButton: { padding: 16, borderRadius: 12, alignItems: 'center' },
   searchButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   quickActions: { marginBottom: 24 },

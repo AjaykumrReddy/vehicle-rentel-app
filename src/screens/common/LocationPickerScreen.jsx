@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { Config } from '../config';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Config } from '../../config';
+import { EXTERNAL_APIS } from '../../config/externalApis';
 
 export default function LocationPickerScreen({ navigation }) {
   const { colors } = useTheme();
@@ -25,7 +26,7 @@ export default function LocationPickerScreen({ navigation }) {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${Config.GOOGLE_PLACES_API_KEY}&components=country:in`
+        `${EXTERNAL_APIS.GOOGLE_MAPS.PLACES_AUTOCOMPLETE}?input=${encodeURIComponent(query)}&key=${Config.GOOGLE_PLACES_API_KEY}&components=country:in`
       );
       const data = await response.json();
       
@@ -43,7 +44,7 @@ export default function LocationPickerScreen({ navigation }) {
   const getPlaceDetails = async (placeId) => {
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${Config.GOOGLE_PLACES_API_KEY}&fields=geometry,formatted_address`
+        `${EXTERNAL_APIS.GOOGLE_MAPS.PLACE_DETAILS}?place_id=${placeId}&key=${Config.GOOGLE_PLACES_API_KEY}&fields=geometry,formatted_address`
       );
       const data = await response.json();
       return data.result;
