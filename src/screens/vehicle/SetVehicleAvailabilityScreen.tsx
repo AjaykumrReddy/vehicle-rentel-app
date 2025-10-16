@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { setVehicleAvailabilitySlots, getVehicleAvailabilitySlots, deleteVehicleAvailabilitySlot } from '../../api/vehicleService';
 import { useAlert } from '../../hooks/useAlert';
-import CustomAlert from '../../components/CustomAlert';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useTheme } from '../../contexts/ThemeContext';
 
 

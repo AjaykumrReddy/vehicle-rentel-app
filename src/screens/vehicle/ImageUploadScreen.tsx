@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadVehiclePhotos } from '../../api/vehicleService';
-import CustomAlert from '../../components/CustomAlert';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { useTheme } from '../../contexts/ThemeContext';
 

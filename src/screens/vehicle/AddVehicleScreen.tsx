@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import useLocation from '../../hooks/useLocation';
-import CustomAlert from '../../components/CustomAlert';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { registerVehicle } from '../../api/vehicleService';
 import { getUserData } from '../../utils/storage';

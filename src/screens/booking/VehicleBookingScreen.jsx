@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getVehicleAvailabilitySlots } from '../../api/vehicleService';
-import CalendarPicker from '../../components/CalendarPicker';
-import TimePicker from '../../components/TimePicker';
+import CalendarPicker from '../../components/CommonComponents/CalendarPicker';
+import TimePicker from '../../components/CommonComponents/TimePicker';
 import { createVehicleBooking } from '../../api/bookingService';
 import { useAlert } from '../../hooks/useAlert';
-import CustomAlert from '../../components/CustomAlert';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
 
 export default function VehicleBookingScreen({ route, navigation }) {
   const { vehicle } = route.params;

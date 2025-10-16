@@ -3,7 +3,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RootNavigator from './navigation/RootNavigator';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { InAppNotificationProvider } from './contexts/InAppNotificationContext';
-import InAppNotificationBanner from './components/InAppNotificationBanner';
+import InAppNotificationBanner from './components/CommonComponents/InAppNotificationBanner';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 
 export default function App() {

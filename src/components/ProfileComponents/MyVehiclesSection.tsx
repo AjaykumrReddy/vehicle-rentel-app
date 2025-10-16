@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
-import CustomAlert from '../CustomAlert';
+import CustomAlert from '../CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
 import { deleteVehicle } from '../../api/vehicleService';
 import { useTheme } from '../../contexts/ThemeContext';

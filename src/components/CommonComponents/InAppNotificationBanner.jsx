@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import { useInAppNotification } from '../contexts/InAppNotificationContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useInAppNotification } from '../../contexts/InAppNotificationContext';
 
 export default function InAppNotificationBanner() {
   const { colors } = useTheme();

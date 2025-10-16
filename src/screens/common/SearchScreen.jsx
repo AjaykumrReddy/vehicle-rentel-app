@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useTheme } from '../../contexts/ThemeContext';
 import useLocation from '../../hooks/useLocation';
 import { EXTERNAL_APIS } from '../../config/externalApis';
-import DateRangePicker from '../../components/DateRangePicker';
-import HourPicker from '../../components/HourPicker';
+import DateRangePicker from '../../components/CommonComponents/DateRangePicker';
+import HourPicker from '../../components/CommonComponents/HourPicker';
 
 export default function SearchScreen({ navigation, route }) {
   const { colors } = useTheme();
