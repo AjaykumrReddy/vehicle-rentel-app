@@ -30,7 +30,6 @@ export default function VehicleResultsScreen({ navigation, route }) {
         radiusKm
       );
       setVehicles(data);
-      console.log("vehicles data - ", data)
     } catch (error) {
       console.error('Search error:', error);
       setVehicles([]);
@@ -67,57 +66,41 @@ export default function VehicleResultsScreen({ navigation, route }) {
     
     return (
       <TouchableOpacity
-        style={[styles.vehicleCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.vehicleCard, { backgroundColor: colors.card }]}
         onPress={() => navigation.navigate('VehicleBooking', { vehicle: item })}
       >
-        <View style={styles.cardContent}>
-          {primaryPhoto ? (
-            <Image source={{ uri: primaryPhoto.photo_url }} style={styles.vehicleImage} />
-          ) : (
-            <View style={[styles.placeholderImage, { backgroundColor: colors.background }]}>
-              <Text style={styles.vehicleIcon}>{getVehicleIcon(item.vehicle_type)}</Text>
-            </View>
-          )}
-          
-          <View style={styles.vehicleInfo}>
-            <View style={styles.vehicleHeader}>
+        {/* Full Width Image */}
+        {primaryPhoto ? (
+          <Image source={{ uri: primaryPhoto.photo_url }} style={styles.vehicleImage} />
+        ) : (
+          <View style={[styles.placeholderImage, { backgroundColor: colors.background }]}>
+            <Text style={styles.vehicleIcon}>{getVehicleIcon(item.vehicle_type)}</Text>
+          </View>
+        )}
+        
+        {/* Vehicle Details at Bottom */}
+        <View style={styles.vehicleDetails}>
+          <View style={styles.topRow}>
+            <View style={styles.vehicleInfo}>
               <Text style={[styles.vehicleName, { color: colors.text }]}>
                 {item.brand} {item.model}
               </Text>
-              <View style={styles.ratingContainer}>
+              <View style={styles.ratingRow}>
                 <Text style={styles.rating}>⭐ 4.8</Text>
+                <Text style={[styles.distance, { color: colors.textSecondary }]}>
+                  • {formatDistance(item.distance_meters)}
+                </Text>
               </View>
             </View>
-            
-            <Text style={[styles.vehicleType, { color: colors.textSecondary }]}>
-              {item.vehicle_type} • {item.year} • {item.color}
-            </Text>
-            
-            <Text style={[styles.ownerName, { color: colors.textSecondary }]}>
-              by {item.owner_name}
-            </Text>
-            
-            <Text style={[styles.distance, { color: colors.primary }]}>
-              📍 {formatDistance(item.distance_meters)}
-            </Text>
-            
-            <View style={styles.pricingRow}>
-              <View style={styles.pricing}>
-                <Text style={[styles.hourlyRate, { color: colors.text }]}>
-                  ₹{item.hourly_rate}/hr
+            <View style={styles.priceContainer}>
+              <Text style={[styles.hourlyRate, { color: colors.primary }]}>
+                ₹{item.hourly_rate}/hr
+              </Text>
+              {item.daily_rate && (
+                <Text style={[styles.dailyRate, { color: colors.textSecondary }]}>
+                  ₹{item.daily_rate}/day
                 </Text>
-                {item.daily_rate && (
-                  <Text style={[styles.dailyRate, { color: colors.textSecondary }]}>
-                    ₹{item.daily_rate}/day
-                  </Text>
-                )}
-              </View>
-              <TouchableOpacity 
-                style={[styles.bookButton, { backgroundColor: colors.primary }]}
-                onPress={() => navigation.navigate('VehicleBooking', { vehicle: item })}
-              >
-                <Text style={styles.bookButtonText}>Book Now</Text>
-              </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -125,19 +108,44 @@ export default function VehicleResultsScreen({ navigation, route }) {
     );
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={[styles.backButton, { color: colors.primary }]}>← Back</Text>
-      </TouchableOpacity>
-      <View style={styles.headerInfo}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Available Vehicles</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          {vehicles.length} vehicles found near {location.name?.split(',')[0]}
-        </Text>
+  const formatDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      time: date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true })
+    };
+  };
+
+  const renderHeader = () => {
+    const startDateTime = formatDateTime(startDate);
+    const endDateTime = formatDateTime(endDate);
+    
+    return (
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={[styles.backIcon, { color: colors.primary }]}>‹</Text>
+        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <View style={styles.titleSection}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              {vehicles.length} vehicles found at
+            </Text>
+            <Text style={[styles.locationText, { color: colors.text }]}>
+              {location.name?.split(',')[0]}
+            </Text>
+          </View>
+          <View style={styles.dateSection}>
+            <Text style={[styles.dateText, { color: colors.textSecondary }]}>
+              {startDateTime.date} {startDateTime.time}
+            </Text>
+            <Text style={[styles.dateText, { color: colors.textSecondary }]}>
+              {endDateTime.date} {endDateTime.time}
+            </Text>
+          </View>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
@@ -189,64 +197,99 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { 
     flexDirection: 'row', 
-    alignItems: 'center', 
+    alignItems: 'flex-start', 
     padding: 16, 
-    paddingTop: 50 
+    paddingTop: 50,
+    paddingBottom: 16
   },
-  backButton: { fontSize: 16, fontWeight: '600', marginRight: 16 },
-  headerInfo: { flex: 1 },
-  headerTitle: { fontSize: 20, fontWeight: '700' },
-  headerSubtitle: { fontSize: 14, marginTop: 2 },
+  backIcon: { fontSize: 24, marginRight: 12 },
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  titleSection: {
+    flex: 0.7,
+    paddingRight: 8,
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  locationText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dateSection: {
+    flex: 0.3,
+    alignItems: 'flex-end',
+  },
+  dateText: {
+    fontSize: 12,
+    textAlign: 'right',
+    marginBottom: 2,
+  },
   listContainer: { padding: 16, paddingTop: 0 },
   vehicleCard: {
     borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
+    marginBottom: 20,
     overflow: 'hidden',
   },
-  cardContent: { flexDirection: 'row', padding: 16 },
   vehicleImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    marginRight: 16,
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
   },
   placeholderImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    marginRight: 16,
+    width: '100%',
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  vehicleIcon: { fontSize: 40 },
-  vehicleInfo: { flex: 1 },
-  vehicleHeader: {
+  vehicleIcon: { fontSize: 60},
+  vehicleDetails: {
+    backgroundColor: '#e3e1e1ff',
+    padding: 10
+  },
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    alignItems: 'flex-start',
   },
-  vehicleName: { fontSize: 18, fontWeight: '700', flex: 1 },
-  ratingContainer: { marginLeft: 8 },
-  rating: { fontSize: 12, color: '#ff9500' },
-  vehicleType: { fontSize: 14, marginBottom: 4 },
-  ownerName: { fontSize: 12, marginBottom: 8 },
-  distance: { fontSize: 12, fontWeight: '600', marginBottom: 12 },
-  pricingRow: {
+  vehicleInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  vehicleName: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  ratingRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  pricing: { flex: 1 },
-  hourlyRate: { fontSize: 16, fontWeight: '700' },
-  dailyRate: { fontSize: 12, marginTop: 2 },
-  bookButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+  rating: {
+    fontSize: 14,
+    color: '#ff9500',
+    fontWeight: '600',
   },
-  bookButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  distance: {
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  hourlyRate: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  dailyRate: {
+    fontSize: 14,
+    marginTop: 2,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

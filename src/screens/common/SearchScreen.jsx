@@ -80,8 +80,15 @@ export default function SearchScreen({ navigation, route }) {
   }, [route.params?.selectedLocation]);
 
   const handleVehiclesSearch = () => {
-    if (!selectedLocation) {
-      alert('Please select a pickup location');
+    // Use selected location or current location as fallback
+    const searchLocation = selectedLocation || {
+      latitude: currentLocation?.latitude,
+      longitude: currentLocation?.longitude,
+      name: currentAddress || 'Current Location'
+    };
+    
+    if (!searchLocation.latitude || !searchLocation.longitude) {
+      alert('Location not available. Please enable location services or select a location.');
       return;
     }
     
@@ -98,10 +105,10 @@ export default function SearchScreen({ navigation, route }) {
     dropoffDateTime.setHours(dropoffHour, 0, 0, 0);
     
     navigation.navigate('VehicleResults', {
-      location: selectedLocation,
+      location: searchLocation,
       startDate: pickupDateTime.toISOString(),
       endDate: dropoffDateTime.toISOString(),
-      radiusKm: 10 //  by defualt update dynamic later
+      radiusKm: 10
     });
   };
 
@@ -131,8 +138,8 @@ export default function SearchScreen({ navigation, route }) {
           onPress={() => navigation.navigate('LocationPicker')}
         >
           <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>📍 Pickup Location</Text>
-          <Text style={[styles.inputValue, { color: selectedLocation ? colors.text : colors.textSecondary }]}>
-            {selectedLocation?.name || 'Select location'}
+          <Text style={[styles.inputValue, { color: (selectedLocation || currentAddress) ? colors.text : colors.textSecondary }]}>
+            {selectedLocation?.name || currentAddress || 'Select location'}
           </Text>
         </TouchableOpacity>
 
