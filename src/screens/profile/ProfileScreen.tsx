@@ -3,10 +3,11 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { getUserData, clearAuthData, getAuthToken } from '../../utils/storage';
 import { getUserVehicles } from '../../api/authService';
 import api from '../../api/axios';

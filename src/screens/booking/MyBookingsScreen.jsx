@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import PagerView from 'react-native-pager-view';
 import { useTheme } from '../../contexts/ThemeContext';
 import BookingCard from '../../components/BookingComponents/BookingCard';

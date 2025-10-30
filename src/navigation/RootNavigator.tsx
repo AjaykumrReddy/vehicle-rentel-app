@@ -9,6 +9,7 @@ import SearchScreen from '../screens/common/SearchScreen';
 import VehicleResultsScreen from '../screens/common/VehicleResultsScreen';
 import MapScreen from '../screens/common/MapScreen';
 import LocationPickerScreen from '../screens/common/LocationPickerScreen';
+import BottomTabNavigator from './BottomTabNavigator';
 
 // Auth screens
 import { LoginScreen, OTPVerificationScreen, SignupScreen } from '../screens/auth';
@@ -39,6 +40,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="MainTabs" component={BottomTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
         <Stack.Screen name="VehicleResults" component={VehicleResultsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="LocationPicker" component={LocationPickerScreen} options={{ headerShown: false }} />

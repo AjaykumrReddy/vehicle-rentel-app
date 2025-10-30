@@ -5,11 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Alert,
   ActivityIndicator,
   Keyboard,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { sendOTP, verifyOTP } from '../../api/authService';
 import { storeAuthData } from '../../utils/storage';
 
@@ -65,7 +66,7 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
       const phoneNumber = mobile.replace('+91', '');
       const authResponse = await verifyOTP(phoneNumber, codeToVerify);
       await storeAuthData(authResponse);
-      navigation.navigate('Search');
+      navigation.navigate('MainTabs');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Invalid OTP. Please try again.';
       setError(errorMessage);

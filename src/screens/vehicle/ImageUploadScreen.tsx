@@ -4,13 +4,14 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Image,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+
 import { uploadVehiclePhotos } from '../../api/vehicleService';
 import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';

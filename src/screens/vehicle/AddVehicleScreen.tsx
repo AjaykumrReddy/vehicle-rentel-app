@@ -5,12 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import useLocation from '../../hooks/useLocation';
 import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
