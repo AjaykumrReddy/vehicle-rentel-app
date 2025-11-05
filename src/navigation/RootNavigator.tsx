@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Common screens
 import SplashScreen from '../screens/common/SplashScreen';
@@ -32,8 +33,22 @@ import ChatScreen from '../screens/chat/ChatScreen';
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
+  const { isDarkMode, colors } = useTheme();
+  
+  const customTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+      card: colors.card,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.primary,
+    },
+  };
+  
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={customTheme}>
       <Stack.Navigator initialRouteName="Splash">
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />

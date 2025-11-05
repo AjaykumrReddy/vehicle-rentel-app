@@ -79,7 +79,7 @@ export default function VehicleResultsScreen({ navigation, route }) {
         )}
         
         {/* Vehicle Details at Bottom */}
-        <View style={styles.vehicleDetails}>
+        <View style={[styles.vehicleDetails, { backgroundColor: colors.surface }]}>
           <View style={styles.topRow}>
             <View style={styles.vehicleInfo}>
               <Text style={[styles.vehicleName, { color: colors.text }]}>
@@ -249,7 +249,6 @@ const styles = StyleSheet.create({
   },
   vehicleIcon: { fontSize: 60},
   vehicleDetails: {
-    backgroundColor: '#e3e1e1ff',
     padding: 10
   },
   topRow: {

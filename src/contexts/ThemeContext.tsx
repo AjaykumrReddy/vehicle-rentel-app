@@ -8,6 +8,7 @@ interface ThemeContextType {
   colors: {
     background: string;
     surface: string;
+    card: string;
     text: string;
     textSecondary: string;
     border: string;
@@ -20,6 +21,7 @@ interface ThemeContextType {
 const lightColors = {
   background: '#f8f9fa',
   surface: '#fff',
+  card: '#fff',
   text: '#333',
   textSecondary: '#666',
   border: '#e9ecef',
@@ -31,6 +33,7 @@ const lightColors = {
 const darkColors = {
   background: '#121212',
   surface: '#1e1e1e',
+  card: '#1e1e1e',
   text: '#ffffff',
   textSecondary: '#b3b3b3',
   border: '#333333',

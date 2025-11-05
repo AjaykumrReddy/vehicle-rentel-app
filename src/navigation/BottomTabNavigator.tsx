@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useTheme } from '../contexts/ThemeContext';
 // import SearchScreen from '../screens/SearchScreen';
 import SearchScreen from '../screens/common/SearchScreen';
 import MyBookingsScreen from '../screens/booking/MyBookingsScreen';
@@ -10,19 +11,21 @@ import MapScreen from '../screens/common/MapScreen';
 const Tab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
+  const { colors } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: colors.card,
           borderTopWidth: 1,
-          borderTopColor: '#E5E5EA',
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          borderTopColor: colors.border,
+          paddingBottom: 20,
+          paddingTop: 8,
+          height: 80,
         },
         tabBarLabelStyle: {
           fontSize: 12,
