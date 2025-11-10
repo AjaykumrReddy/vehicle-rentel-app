@@ -1,0 +1,6 @@
+# EAS ignore file
+node_modules/
+.git/
+.expo/
+android/
+ios/

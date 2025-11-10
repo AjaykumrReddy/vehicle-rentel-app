@@ -19,11 +19,22 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 21
+            "minSdkVersion": 24,
+            "enableProguardInReleaseBuilds": true,
+            "enableSeparateBuildPerCPUArchitecture": true,
+            "packagingOptions": {
+              "pickFirst": ["**/libc++_shared.so", "**/libjsc.so"]
+            }
           }
         }
       ],
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e9524015-d7c1-44ee-931b-2152cab21597"
+      }
+    }
   }
 }
