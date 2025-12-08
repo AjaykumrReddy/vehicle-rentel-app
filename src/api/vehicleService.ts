@@ -28,7 +28,6 @@ export async function getNearbyVehicles(
 ): Promise<Vehicle[]> {
   try {
     const token = await getAuthToken();
-    console.log('Token:', token)
     const response = await api.get('/vehicles/nearby', {
       params: { lat, lng, radius_km },
       headers: { 'Authorization': `Bearer ${token}` },
@@ -183,3 +182,16 @@ export const searchVehicles = async (latitude: number, longitude: number, startD
   }
 }
 
+// Get Vehicle Photos
+export const getVehiclePhotos = async (vehicleId: string) => {
+  try {
+    const token = await getAuthToken();
+    const response = await api.get(`/vehicles/${vehicleId}/photos`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Get vehicle photos error:', error);
+    throw error;
+  }
+};

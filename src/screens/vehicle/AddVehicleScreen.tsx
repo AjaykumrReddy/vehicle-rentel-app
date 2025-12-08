@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,8 +18,10 @@ import { useAlert } from '../../hooks/useAlert';
 import { registerVehicle } from '../../api/vehicleService';
 import { getUserData } from '../../utils/storage';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Config } from '../../config';
+import { errorLogger } from '../../services/errorLogger';
 
-export default function AddVehicleScreen({ navigation }: { navigation: any }) {
+export default function AddVehicleScreen({ navigation, route }: { navigation: any, route: any }) {
   const { colors } = useTheme();
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -27,11 +29,89 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
   const [licensePlate, setLicensePlate] = useState('');
   const [year, setYear] = useState('');
   const [color, setColor] = useState('');
+  const [address, setAddress] = useState('');
+  const [loadingAddress, setLoadingAddress] = useState(false);
   const [submitVehicleLoading, setSubmitVehicleLoading] = useState(false);
   const { location, loading, errorMsg } = useLocation();
   const { alertConfig, visible, hideAlert, showError, showSuccess } = useAlert();
 
   const vehicleTypes = ['Bike', 'Scooter', 'Car'];
+
+  useEffect(() => {
+    if (location) {
+      fetchAddress(location.latitude, location.longitude);
+    }
+  }, [location]);
+
+
+
+  const fetchAddress = async (lat: number, lng: number) => {
+    try {
+      setLoadingAddress(true);
+      
+      // Fallback to coordinates if no API key
+      if (!Config.GOOGLE_PLACES_API_KEY) {
+        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return;
+      }
+
+      const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${Config.GOOGLE_PLACES_API_KEY}`;
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Log API errors for debugging but don't show to user
+      if (data.status !== 'OK') {
+        console.log('Google Geocoding API Error:', data.error_message)
+        await errorLogger.logError({
+          type: 'GOOGLE_GEOCODING_API_ERROR',
+          message: `Status: ${data.status}, Error: ${data.error_message || 'Unknown'}`,
+          apiEndpoint: apiUrl,
+          requestData: { lat, lng },
+          responseData: data,
+          userAction: 'Fetching address during vehicle registration'
+        });
+        
+        // Silent fallback to coordinates
+        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        return;
+      }
+      
+      if (data.results && data.results.length > 0) {
+        const formattedAddress = data.results[0].formatted_address;
+        setAddress(formattedAddress);
+      } else {
+        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      }
+    } catch (error: any) {
+      // Log error for developers but show friendly fallback to users
+      await errorLogger.logError({
+        type: 'ADDRESS_FETCH_ERROR',
+        message: error.message || 'Unknown error',
+        stack: error.stack,
+        apiEndpoint: 'Google Geocoding API',
+        requestData: { lat, lng },
+        userAction: 'Fetching address during vehicle registration'
+      });
+      
+      // Silent fallback - user doesn't need to know about the error
+      setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    } finally {
+      setLoadingAddress(false);
+    }
+  };
+
+  const handleChangeLocation = () => {
+    navigation.navigate('LocationPicker', {
+      onLocationSelect: (selectedLocation: any, selectedAddress: string) => {
+        // This will be handled when returning from LocationPicker
+      }
+    });
+  };
 
   const handleSubmit = async () => {
     if (!brand || !model || !vehicleType || !licensePlate || !year || !color) {
@@ -240,16 +320,42 @@ export default function AddVehicleScreen({ navigation }: { navigation: any }) {
 
           {/* Location Info */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Location</Text>
+            <View style={styles.locationHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Location</Text>
+              {location && (
+                <TouchableOpacity onPress={handleChangeLocation}>
+                  <Text style={[styles.changeLocationText, { color: colors.primary }]}>Change</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={[styles.locationInfo, { backgroundColor: colors.background, borderColor: colors.border }]}>
               <Text style={styles.locationIcon}>📍</Text>
               <View style={styles.locationTextContainer}>
-                <Text style={[styles.locationText, { color: colors.text }]}>
-                  {location ? 'Current location captured' : 'Getting location...'}
-                </Text>
-                <Text style={[styles.locationSubtext, { color: colors.textSecondary }]}>
-                  Vehicle will be registered at your current location
-                </Text>
+                {loading ? (
+                  <>
+                    <Text style={[styles.locationText, { color: colors.text }]}>Getting location...</Text>
+                    <ActivityIndicator size="small" color={colors.primary} style={styles.locationLoader} />
+                  </>
+                ) : location ? (
+                  <>
+                    <Text style={[styles.locationText, { color: colors.text }]}>
+                      {loadingAddress ? 'Loading address...' : (address || 'Address not available')}
+                    </Text>
+                    <Text style={[styles.locationCoords, { color: colors.textSecondary }]}>
+                      {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                    </Text>
+                    <Text style={[styles.locationSubtext, { color: colors.textSecondary }]}>
+                      Vehicle will be registered at this location
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={[styles.locationText, { color: colors.error }]}>Location not available</Text>
+                    <Text style={[styles.locationSubtext, { color: colors.textSecondary }]}>
+                      Please enable GPS and restart the app
+                    </Text>
+                  </>
+                )}
               </View>
             </View>
           </View>
@@ -299,7 +405,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    paddingTop: 50,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -434,6 +539,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#e1e5e9',
     marginHorizontal: 10,
   },
+  locationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  changeLocationText: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
   locationInfo: {
     backgroundColor: '#fff',
     padding: 16,
@@ -441,11 +557,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e1e5e9',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   locationIcon: {
     fontSize: 24,
     marginRight: 12,
+    marginTop: 2,
   },
   locationTextContainer: {
     flex: 1,
@@ -454,11 +571,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  locationCoords: {
+    fontSize: 12,
+    color: '#666',
+    fontFamily: 'monospace',
+    marginBottom: 4,
   },
   locationSubtext: {
     fontSize: 12,
     color: '#666',
+    lineHeight: 16,
+  },
+  locationLoader: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
   },
   submitButton: {
     backgroundColor: '#007AFF',

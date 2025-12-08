@@ -159,6 +159,7 @@ export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDel
           title={alertConfig.title}
           message={alertConfig.message}
           buttons={alertConfig.buttons}
+          type={alertConfig.type}
           onClose={hideAlert}
         />
       )}

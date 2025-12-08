@@ -234,7 +234,6 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
-    paddingTop: 50,
     borderBottomWidth: 1,
   },
   filtersContainer: {
