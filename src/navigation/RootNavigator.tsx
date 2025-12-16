@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../contexts/ThemeContext';
+import { setNavigationRef } from '../services/authInterceptor';
 
 // Common screens
 import SplashScreen from '../screens/common/SplashScreen';
@@ -35,6 +36,7 @@ const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   const { isDarkMode, colors } = useTheme();
+  const navigationRef = useRef<any>(null);
   
   const customTheme = {
     ...DefaultTheme,
@@ -49,7 +51,13 @@ export default function RootNavigator() {
   };
   
   return (
-    <NavigationContainer theme={customTheme}>
+    <NavigationContainer 
+      ref={navigationRef}
+      theme={customTheme}
+      onReady={() => {
+        setNavigationRef(navigationRef.current);
+      }}
+    >
       <Stack.Navigator initialRouteName="Splash">
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />

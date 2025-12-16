@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useLocation from '../../hooks/useLocation';
 import CustomAlert from '../../components/CommonComponents/CustomAlert';
 import { useAlert } from '../../hooks/useAlert';
+import { useTokenExpiry } from '../../hooks/useTokenExpiry';
 import { registerVehicle } from '../../api/vehicleService';
 import { getUserData } from '../../utils/storage';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -34,6 +35,7 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
   const [submitVehicleLoading, setSubmitVehicleLoading] = useState(false);
   const { location, loading, errorMsg } = useLocation();
   const { alertConfig, visible, hideAlert, showError, showSuccess } = useAlert();
+  const { checkTokenExpiry } = useTokenExpiry(navigation);
 
   const vehicleTypes = ['Bike', 'Scooter', 'Car'];
 
@@ -171,6 +173,11 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
         ]
       );
     } catch (error: any) {
+      // Check if token expired first
+      if (checkTokenExpiry(error)) {
+        return; // Token expiry handled, don't show other errors
+      }
+      
       const message = error.response?.data?.detail || 
                      (error.code === 'NETWORK_ERROR' || !error.response 
                       ? 'Please check your internet connection and try again.' 
