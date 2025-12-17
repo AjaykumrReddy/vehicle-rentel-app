@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import { searchVehicles } from '../../api/vehicleService';
+import { useAlert } from '../../hooks/useAlert';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
 
 export default function VehicleResultsScreen({ navigation, route }) {
   const { colors } = useTheme();
@@ -19,6 +21,7 @@ export default function VehicleResultsScreen({ navigation, route }) {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { alertConfig, visible, hideAlert, showError, showSuccess } = useAlert();
 
   const fetchVehicles = async () => {
     try {
@@ -31,8 +34,10 @@ export default function VehicleResultsScreen({ navigation, route }) {
       );
       setVehicles(data);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Search error response:', error.response.data);
       setVehicles([]);
+      const errorMessage = error.response?.data?.detail || error.message || 'Unable to search for vehicles. Please check your connection and try again.';
+      showError('Oops !', errorMessage);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -189,6 +194,16 @@ export default function VehicleResultsScreen({ navigation, route }) {
         }
         ListEmptyComponent={renderEmpty}
       />
+      {alertConfig && (
+        <CustomAlert
+          visible={visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          type={alertConfig.type}
+          onClose={hideAlert}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -196,10 +211,9 @@ export default function VehicleResultsScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { 
-    flexDirection: 'row', 
-    alignItems: 'flex-start', 
-    padding: 16, 
-    paddingTop: 50,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
     paddingBottom: 16
   },
   backIcon: { fontSize: 24, marginRight: 12 },

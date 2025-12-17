@@ -122,7 +122,7 @@ export default function LocationPickerScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   backButton: { fontSize: 16, fontWeight: '600' },
   title: { fontSize: 18, fontWeight: '600' },
   searchContainer: { flexDirection: 'row', alignItems: 'center', margin: 16, padding: 12, borderRadius: 12, borderWidth: 1 },

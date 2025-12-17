@@ -371,6 +371,7 @@ export default function VehicleBookingScreen({ route, navigation }) {
           message={alertConfig.message}
           buttons={alertConfig.buttons}
           onClose={hideAlert}
+          type={alertConfig.type}
         />
       )}
       <ScrollView showsVerticalScrollIndicator={false}>

@@ -272,7 +272,7 @@ export default function OwnerDashboardScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, paddingTop: 50 },
+  header: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1},
   pagerView: { flex: 1 },
   tabContent: { flex: 1 },
   headerTitle: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
