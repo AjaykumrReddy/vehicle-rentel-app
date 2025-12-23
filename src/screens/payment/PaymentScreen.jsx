@@ -173,7 +173,7 @@ export default function PaymentScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, paddingTop: 50, borderBottomWidth: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
   backButton: { fontSize: 24 },
   headerTitle: { fontSize: 18, fontWeight: '600' },
   content: { flex: 1, padding: 16 },

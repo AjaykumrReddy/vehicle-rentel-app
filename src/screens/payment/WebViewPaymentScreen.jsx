@@ -105,19 +105,6 @@ export default function WebViewPaymentScreen({ route, navigation }) {
         </style>
       </head>
       <body>
-        <div class="container">
-          <h2>Complete Payment</h2>
-          <div class="vehicle-info">
-            <strong>${booking.vehicle?.brand} ${booking.vehicle?.model}</strong>
-            <br>
-            <small>${booking.vehicle?.vehicle_type}</small>
-          </div>
-          <div class="amount">₹${amount / 100}</div>
-          <button class="pay-button" onclick="startPayment()">
-            Pay Now
-          </button>
-        </div>
-
         <script>
           function startPayment() {
             const options = {
@@ -250,8 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between', 
-    padding: 16, 
-    paddingTop: 50, 
+    padding: 16,
     borderBottomWidth: 1 
   },
   backButton: { fontSize: 24 },
