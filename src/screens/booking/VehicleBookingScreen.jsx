@@ -284,6 +284,18 @@ export default function VehicleBookingScreen({ route, navigation }) {
     const endDateTime = new Date(endDate || startDate);
     endDateTime.setHours(endTime);
     
+    const now = new Date();
+    
+    // Check if start time is in the past
+    if (startDateTime <= now) {
+      return 'Start time cannot be in the past. Please select a future date and time.';
+    }
+    
+    // Check if end time is before start time
+    if (endDateTime <= startDateTime) {
+      return 'End time must be after start time.';
+    }
+    
     // Check if booking spans across availability gaps
     if (!isBookingWithinAvailability(startDateTime, endDateTime)) {
       return 'Selected time period has gaps in availability. Please choose a continuous available period.';
@@ -420,7 +432,7 @@ export default function VehicleBookingScreen({ route, navigation }) {
              currentStep === 'startTime' ? '⏰ Select start time' :
              currentStep === 'endDate' ? '📅 Select end date (or choose same-day)' :
              currentStep === 'endTime' ? '⏰ Select end time' :
-             !isValidBooking() ? '⚠️ Please check your selection - there may be gaps in availability' :
+             !isValidBooking() ? `⚠️ ${getBookingValidationError()}` :
              '✅ Ready to book!'}
           </Text>
         </View>
