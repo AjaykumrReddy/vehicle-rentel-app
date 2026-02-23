@@ -30,3 +30,13 @@ export async function getUserVehicles(): Promise<any[]> {
   const response = await api.get('/users/vehicles');
   return response.data;
 }
+
+export async function registerUser(userData: {
+  phone_number: string;
+  full_name: string;
+  email?: string | null;
+  user_type: string;
+}): Promise<any> {
+  const response = await api.post('/users/register', userData);
+  return response.data;
+}

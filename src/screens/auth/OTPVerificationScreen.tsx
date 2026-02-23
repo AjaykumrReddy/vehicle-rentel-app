@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { sendOTP, verifyOTP } from '../../api/authService';
+import { sendOTP, verifyOTP, registerUser } from '../../api/authService';
 import { storeAuthData } from '../../utils/storage';
 
 export default function OTPVerificationScreen({ navigation, route }: { navigation: any, route: any }) {
@@ -20,7 +20,8 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
-  const { mobile } = route.params;
+  const { mobile = '', phoneNumber = '', name = '', email = '', userType = '', isSignup = false, userId = '' } = route.params || {};
+  const phone = mobile || phoneNumber;
   const otpInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -63,9 +64,12 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
     setError('');
 
     try {
-      const phoneNumber = mobile.replace('+91', '');
-      const authResponse = await verifyOTP(phoneNumber, codeToVerify);
+      const phoneNum = phone.replace('+91', '').replace(/\D/g, '');
+      
+      // Verify OTP and update is_verified to true
+      const authResponse = await verifyOTP(phoneNum, codeToVerify);
       await storeAuthData(authResponse);
+      
       navigation.navigate('MainTabs');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Invalid OTP. Please try again.';
@@ -82,10 +86,10 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
     setError('');
     
     try {
-      const phoneNumber = mobile.replace('+91', '');
+      const phoneNumber = phone.replace('+91', '').replace(/\D/g, '');
       await sendOTP(phoneNumber);
       setTimer(30);
-      Alert.alert('OTP Sent', `A new OTP has been sent to ${mobile}`);
+      Alert.alert('OTP Sent', `A new OTP has been sent to ${phone}`);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Failed to resend OTP. Please try again.';
       setError(errorMessage);
@@ -95,6 +99,7 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
   };
 
   const formatPhoneNumber = (phone: string): string => {
+    if (!phone) return '';
     if (phone.startsWith('+91')) {
       const number = phone.slice(3);
       return `+91 ${number.slice(0, 5)} ${number.slice(5)}`;
@@ -110,7 +115,7 @@ export default function OTPVerificationScreen({ navigation, route }: { navigatio
           <Text style={styles.subtitle}>
             Enter the 6-digit code sent to
           </Text>
-          <Text style={styles.phoneNumber}>{formatPhoneNumber(mobile)}</Text>
+          <Text style={styles.phoneNumber}>{formatPhoneNumber(phone)}</Text>
         </View>
 
         <View style={styles.form}>
