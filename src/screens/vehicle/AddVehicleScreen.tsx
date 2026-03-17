@@ -19,8 +19,7 @@ import { useTokenExpiry } from '../../hooks/useTokenExpiry';
 import { registerVehicle } from '../../api/vehicleService';
 import { getUserData } from '../../utils/storage';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Config } from '../../config';
-import { errorLogger } from '../../services/errorLogger';
+import { getAddressFromCoords } from '../../utils/geocoding';
 
 export default function AddVehicleScreen({ navigation, route }: { navigation: any, route: any }) {
   const { colors } = useTheme();
@@ -45,66 +44,12 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
     }
   }, [location]);
 
-
-
   const fetchAddress = async (lat: number, lng: number) => {
-    try {
-      setLoadingAddress(true);
-      
-      // Fallback to coordinates if no API key
-      if (!Config.GOOGLE_PLACES_API_KEY) {
-        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        return;
-      }
-
-      const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${Config.GOOGLE_PLACES_API_KEY}`;
-      const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      // Log API errors for debugging but don't show to user
-      if (data.status !== 'OK') {
-        console.log('Google Geocoding API Error:', data.error_message)
-        await errorLogger.logError({
-          type: 'GOOGLE_GEOCODING_API_ERROR',
-          message: `Status: ${data.status}, Error: ${data.error_message || 'Unknown'}`,
-          apiEndpoint: apiUrl,
-          requestData: { lat, lng },
-          responseData: data,
-          userAction: 'Fetching address during vehicle registration'
-        });
-        
-        // Silent fallback to coordinates
-        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        return;
-      }
-      
-      if (data.results && data.results.length > 0) {
-        const formattedAddress = data.results[0].formatted_address;
-        setAddress(formattedAddress);
-      } else {
-        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      }
-    } catch (error: any) {
-      // Log error for developers but show friendly fallback to users
-      await errorLogger.logError({
-        type: 'ADDRESS_FETCH_ERROR',
-        message: error.message || 'Unknown error',
-        stack: error.stack,
-        apiEndpoint: 'Google Geocoding API',
-        requestData: { lat, lng },
-        userAction: 'Fetching address during vehicle registration'
-      });
-      
-      // Silent fallback - user doesn't need to know about the error
-      setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-    } finally {
-      setLoadingAddress(false);
-    }
+    setLoadingAddress(true);
+    const address = await getAddressFromCoords(lat, lng);
+    console.info('Address fetched:', address)
+    setAddress(address);
+    setLoadingAddress(false);
   };
 
   const handleChangeLocation = () => {
@@ -345,11 +290,8 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
                   </>
                 ) : location ? (
                   <>
-                    <Text style={[styles.locationText, { color: colors.text }]}>
-                      {loadingAddress ? 'Loading address...' : (address || 'Address not available')}
-                    </Text>
-                    <Text style={[styles.locationCoords, { color: colors.textSecondary }]}>
-                      {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                    <Text style={[styles.locationText, { color: colors.text }]}>  
+                      {loadingAddress ? 'Loading address...' : (address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`)}
                     </Text>
                     <Text style={[styles.locationSubtext, { color: colors.textSecondary }]}>
                       Vehicle will be registered at this location

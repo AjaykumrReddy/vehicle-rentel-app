@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import useLocation from '../../hooks/useLocation';
-import { EXTERNAL_APIS } from '../../config/externalApis';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import HourPicker from '../../components/CommonComponents/HourPicker';
+import { getAddressFromCoords } from '../../utils/geocoding';
 
 export default function SearchScreen({ navigation, route }) {
   const { colors } = useTheme();
@@ -25,53 +25,22 @@ export default function SearchScreen({ navigation, route }) {
   const [showHourPicker, setShowHourPicker] = useState(false);
   const [selectedHour, setSelectedHour] = useState(9);
 
-  // Reverse geocoding function using free Nominatim API
-  const getAddressFromCoords = async (latitude, longitude) => {
-    try {
-      setAddressLoading(true);
-      const response = await fetch(
-        `${EXTERNAL_APIS.OPENSTREETMAP.REVERSE_GEOCODE}?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`,
-        {
-          headers: {
-            'User-Agent': 'VehicleRentalApp/1.0'
-          }
-        }
-      );
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const text = await response.text();
-      const data = JSON.parse(text);
-      
-      if (data && data.display_name) {
-        // Extract meaningful parts of address
-        const address = data.address || {};
-        const shortAddress = [
-          address.road || address.neighbourhood,
-          address.suburb || address.city_district,
-          address.city || address.town
-        ].filter(Boolean).join(', ');
-        
-        setCurrentAddress(shortAddress || data.display_name.split(',').slice(0, 2).join(','));
-      } else {
-        setCurrentAddress('Address not found');
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      setCurrentAddress(`${currentLocation.latitude.toFixed(3)}, ${currentLocation.longitude.toFixed(3)}`);
-    } finally {
-      setAddressLoading(false);
-    }
-  };
-
   // Get address when location changes
   useEffect(() => {
     if (currentLocation && !locationLoading) {
-      getAddressFromCoords(currentLocation.latitude, currentLocation.longitude);
+      fetchAddress();
     }
   }, [currentLocation, locationLoading]);
+
+  const fetchAddress = async () => {
+    setAddressLoading(true);
+    const address = await getAddressFromCoords(
+      currentLocation.latitude,
+      currentLocation.longitude
+    );
+    setCurrentAddress(address);
+    setAddressLoading(false);
+  };
 
   // Handle selected location from LocationPicker
   useEffect(() => {

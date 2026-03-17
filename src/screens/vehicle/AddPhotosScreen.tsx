@@ -18,7 +18,7 @@ import { useAlert } from '../../hooks/useAlert';
 import { useTheme } from '../../contexts/ThemeContext';
 
 
-export default function ImageUploadScreen({ navigation, route }: { navigation: any, route: any }) {
+export default function AddPhotosScreen({ navigation, route }: { navigation: any, route: any }) {
   const { colors } = useTheme();
   const { vehicleId } = route.params;
   const [images, setImages] = useState<any[]>([]);

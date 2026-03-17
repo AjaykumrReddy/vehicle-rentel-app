@@ -110,9 +110,9 @@ export default function MyVehiclesSection({ vehicles, onAddVehicle, onVehicleDel
             </View>
             <View style={styles.vehicleDetails}>
               <Text style={[styles.vehicleName, { color: colors.text }]}>{vehicle.brand} {vehicle.model}</Text>
-              <Text style={[styles.vehicleLocation, { color: colors.textSecondary }]}>
+              {/* <Text style={[styles.vehicleLocation, { color: colors.textSecondary }]}>
                 📍 {vehicle.latitude.toFixed(4)}, {vehicle.longitude.toFixed(4)}
-              </Text>
+              </Text> */}
               <View style={styles.vehicleStatusContainer}>
                 <View style={[styles.statusDot, { backgroundColor: vehicle.available ? '#00C851' : '#ff4444' }]} />
                 <Text style={[styles.vehicleStatus, { color: colors.textSecondary }]}>{vehicle.available ? 'Available' : 'Not Available'}</Text>

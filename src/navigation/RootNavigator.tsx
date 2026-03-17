@@ -25,7 +25,7 @@ import { PaymentScreen, WebViewPaymentScreen, PaymentSuccessScreen, RazorpayWebV
 // Individual screens
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import AddVehicleScreen from '../screens/vehicle/AddVehicleScreen';
-import ImageUploadScreen from '../screens/vehicle/ImageUploadScreen';
+import AddPhotosScreen from '../screens/vehicle/AddPhotosScreen';
 import UpdatePhotosScreen from '../screens/vehicle/UpdatePhotosScreen';
 import AvailabilitySetupScreen from '../screens/vehicle/AvailabilitySetupScreen';
 import SetVehicleAvailabilityScreen from '../screens/vehicle/SetVehicleAvailabilityScreen';
@@ -71,7 +71,7 @@ export default function RootNavigator() {
         <Stack.Screen name="Map" component={MapScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AddVehicle" component={AddVehicleScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ImageUpload" component={ImageUploadScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ImageUpload" component={AddPhotosScreen} options={{ headerShown: false }} />
         <Stack.Screen name="updatePhotos" component={UpdatePhotosScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AvailabilitySetup" component={AvailabilitySetupScreen} options={{ headerShown: false }} />
         <Stack.Screen name="SetVehicleAvailability" component={SetVehicleAvailabilityScreen} options={{ headerShown: false }} />
