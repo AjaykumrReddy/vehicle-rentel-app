@@ -3,7 +3,6 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,9 +15,12 @@ import MyVehiclesSection from '../../components/ProfileComponents/MyVehiclesSect
 import ProfileSettings from '../../components/ProfileComponents/ProfileSettings';
 import { useTheme } from '../../contexts/ThemeContext';
 import ProfileMenu from '../../components/ProfileComponents/ProfileMenu';
+import CustomAlert from '../../components/CommonComponents/CustomAlert';
+import { useAlert } from '../../hooks/useAlert';
 
 export default function ProfileScreen({ navigation }: { navigation: any }) {
   const { colors } = useTheme();
+  const { alertConfig, visible, hideAlert, showWarning } = useAlert();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -52,7 +54,7 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(
+    showWarning(
       'Logout',
       'Are you sure you want to logout?',
       [
@@ -105,6 +107,17 @@ export default function ProfileScreen({ navigation }: { navigation: any }) {
         
         <ProfileMenu navigation={navigation} onLogout={handleLogout} />
       </ScrollView>
+
+      {alertConfig && (
+        <CustomAlert
+          visible={visible}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          buttons={alertConfig.buttons}
+          type={alertConfig.type}
+          onClose={hideAlert}
+        />
+      )}
     </SafeAreaView>
   );
 }

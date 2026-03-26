@@ -5,8 +5,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Config } from '../../config';
 import { EXTERNAL_APIS } from '../../config/externalApis';
 
-export default function LocationPickerScreen({ navigation }) {
+export default function LocationPickerScreen({ navigation, route }) {
   const { colors } = useTheme();
+  const { returnScreen = 'Search' } = route.params || {};
   const [searchText, setSearchText] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,8 +64,7 @@ export default function LocationPickerScreen({ navigation }) {
         longitude: details.geometry.location.lng,
         placeId: place.place_id
       };
-      console.log("location - ", location)
-      navigation.navigate('Search', { selectedLocation: location });
+      navigation.navigate(returnScreen, { selectedLocation: location });
     }
   };
 

@@ -32,17 +32,19 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
   const [address, setAddress] = useState('');
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [submitVehicleLoading, setSubmitVehicleLoading] = useState(false);
-  const { location, loading, errorMsg } = useLocation();
+  const [location, setLocation] = useState<any>(null);
+  const { location: currentLocation, loading } = useLocation();
   const { alertConfig, visible, hideAlert, showError, showSuccess } = useAlert();
   const { checkTokenExpiry } = useTokenExpiry(navigation);
 
   const vehicleTypes = ['Bike', 'Scooter', 'Car'];
 
   useEffect(() => {
-    if (location) {
-      fetchAddress(location.latitude, location.longitude);
+    if (currentLocation && !location) {
+      setLocation(currentLocation);
+      fetchAddress(currentLocation.latitude, currentLocation.longitude);
     }
-  }, [location]);
+  }, [currentLocation]);
 
   const fetchAddress = async (lat: number, lng: number) => {
     setLoadingAddress(true);
@@ -54,11 +56,19 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
 
   const handleChangeLocation = () => {
     navigation.navigate('LocationPicker', {
-      onLocationSelect: (selectedLocation: any, selectedAddress: string) => {
-        // This will be handled when returning from LocationPicker
-      }
+      returnScreen: 'AddVehicle'
     });
   };
+
+  // Handle selected location returned from LocationPicker
+  useEffect(() => {
+    if (route.params?.selectedLocation) {
+      const selected = route.params.selectedLocation;
+      setLocation({ latitude: selected.latitude, longitude: selected.longitude });
+      setAddress(selected.name || '');
+      navigation.setParams({ selectedLocation: null });
+    }
+  }, [route.params?.selectedLocation]);
 
   const handleSubmit = async () => {
     if (!brand || !model || !vehicleType || !licensePlate || !year || !color) {
@@ -146,7 +156,7 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
           contentContainerStyle={styles.scrollContent}
         >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={[styles.backIcon, { color: colors.text }]}>←</Text>
           </TouchableOpacity>
@@ -163,24 +173,24 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
               </View>
               <Text style={[styles.progressLabel, { color: colors.text }]}>Basic Info</Text>
             </View>
-            <View style={styles.progressLine} />
+            <View style={[styles.progressLine, { backgroundColor: colors.border }]} />
             <View style={styles.progressStep}>
-              <View style={styles.progressStepInactive}>
-                <Text style={styles.progressStepTextInactive}>2</Text>
+              <View style={[styles.progressStepInactive, { backgroundColor: colors.border }]}>
+                <Text style={[styles.progressStepTextInactive, { color: colors.textSecondary }]}>2</Text>
               </View>
               <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Photos</Text>
             </View>
-            <View style={styles.progressLine} />
+            <View style={[styles.progressLine, { backgroundColor: colors.border }]} />
             <View style={styles.progressStep}>
-              <View style={styles.progressStepInactive}>
-                <Text style={styles.progressStepTextInactive}>3</Text>
+              <View style={[styles.progressStepInactive, { backgroundColor: colors.border }]}>
+                <Text style={[styles.progressStepTextInactive, { color: colors.textSecondary }]}>3</Text>
               </View>
               <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Pricing</Text>
             </View>
           </View>
 
           {/* Vehicle Type Selection */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Vehicle Type *</Text>
             <View style={styles.typeContainer}>
               {vehicleTypes.map((type) => (
@@ -206,7 +216,7 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
           </View>
 
           {/* Vehicle Details */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Vehicle Details</Text>
             
             <View style={styles.inputContainer}>
@@ -271,7 +281,7 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
           </View>
 
           {/* Location Info */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
             <View style={styles.locationHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Location</Text>
               {location && (
@@ -344,102 +354,44 @@ export default function AddVehicleScreen({ navigation, route }: { navigation: an
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
-  backIcon: {
-    fontSize: 24,
-    color: '#333',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  placeholder: {
-    width: 24,
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 50,
-  },
-  content: {
-    padding: 20,
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
-  },
-  typeContainer: {
-    flexDirection: 'row',
-    gap: 10,
-  },
+  backIcon: { fontSize: 24 },
+  headerTitle: { fontSize: 18, fontWeight: '600' },
+  placeholder: { width: 24 },
+  keyboardAvoid: { flex: 1 },
+  scrollContent: { flexGrow: 1, paddingBottom: 50 },
+  content: { padding: 20 },
+  section: { marginBottom: 30 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 15 },
+  typeContainer: { flexDirection: 'row', gap: 10 },
   typeButton: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e1e5e9',
-    backgroundColor: '#fff',
     alignItems: 'center',
   },
-  typeButtonActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
-  },
-  typeText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  typeTextActive: {
-    color: '#fff',
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 6,
-  },
+  typeText: { fontSize: 14, fontWeight: '500' },
+  inputContainer: { marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '500', marginBottom: 6 },
   input: {
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e1e5e9',
     fontSize: 16,
   },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  halfWidth: {
-    flex: 1,
-  },
+  row: { flexDirection: 'row', gap: 12 },
+  halfWidth: { flex: 1 },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -447,9 +399,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     paddingHorizontal: 20,
   },
-  progressStep: {
-    alignItems: 'center',
-  },
+  progressStep: { alignItems: 'center' },
   progressStepActive: {
     width: 32,
     height: 32,
@@ -463,94 +413,38 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#e1e5e9',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
-  progressStepText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  progressStepTextInactive: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  progressLabel: {
-    fontSize: 12,
-    color: '#666',
-  },
-  progressLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#e1e5e9',
-    marginHorizontal: 10,
-  },
+  progressStepText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  progressStepTextInactive: { fontSize: 14, fontWeight: '600' },
+  progressLabel: { fontSize: 12 },
+  progressLine: { flex: 1, height: 2, marginHorizontal: 10 },
   locationHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 15,
   },
-  changeLocationText: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
+  changeLocationText: { fontSize: 14, fontWeight: '500' },
   locationInfo: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e1e5e9',
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  locationIcon: {
-    fontSize: 24,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  locationTextContainer: {
-    flex: 1,
-  },
-  locationText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  locationCoords: {
-    fontSize: 12,
-    color: '#666',
-    fontFamily: 'monospace',
-    marginBottom: 4,
-  },
-  locationSubtext: {
-    fontSize: 12,
-    color: '#666',
-    lineHeight: 16,
-  },
-  locationLoader: {
-    marginTop: 4,
-    alignSelf: 'flex-start',
-  },
+  locationIcon: { fontSize: 24, marginRight: 12, marginTop: 2 },
+  locationTextContainer: { flex: 1 },
+  locationText: { fontSize: 14, fontWeight: '500', marginBottom: 4, lineHeight: 20 },
+  locationSubtext: { fontSize: 12, lineHeight: 16 },
+  locationLoader: { marginTop: 4, alignSelf: 'flex-start' },
   submitButton: {
-    backgroundColor: '#007AFF',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
   },
-  submitButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

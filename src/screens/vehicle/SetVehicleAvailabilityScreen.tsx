@@ -262,23 +262,24 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
           title={alertConfig.title}
           message={alertConfig.message}
           buttons={alertConfig.buttons}
+          type={alertConfig.type}
           onClose={hideAlert}
         />
       )}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backIcon}>←</Text>
+          <Text style={[styles.backIcon, { color: colors.primary }]}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Set Availability</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Set Availability</Text>
         <TouchableOpacity 
           onPress={saveAvailability}
           disabled={!hasChanges || saving}
           style={styles.saveButton}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#007AFF" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text style={[styles.saveText, (!hasChanges || saving) && styles.saveTextDisabled]}>Save</Text>
+            <Text style={[styles.saveText, { color: colors.primary }, (!hasChanges || saving) && { color: colors.textSecondary }]}>Save</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -316,11 +317,14 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
           return (
           <View key={index} style={[
             styles.slotCard,
-            isExisting ? styles.existingSlot : styles.newSlot
+            { backgroundColor: colors.surface },
+            isExisting 
+              ? { borderLeftColor: '#28a745', backgroundColor: colors.surface } 
+              : { borderLeftColor: colors.primary, backgroundColor: colors.surface }
           ]}>
             <View style={styles.slotHeader}>
               <View style={styles.slotTitleContainer}>
-                <Text style={styles.slotTitle}>
+                <Text style={[styles.slotTitle, { color: colors.text }]}>
                   {isExisting ? '📅 Existing' : '➕ New'} Slot {index + 1}
                 </Text>
                 {isExisting && <Text style={styles.existingBadge}>SAVED</Text>}
@@ -353,49 +357,51 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
             </View>
 
             <View style={styles.timeSection}>
-              <Text style={styles.label}>Time Period</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Time Period</Text>
               <View style={styles.timeRow}>
                 <TouchableOpacity 
-                  style={[styles.timeButton, isExisting && styles.disabledButton]}
+                  style={[styles.timeButton, { backgroundColor: colors.background, borderColor: colors.border }, isExisting && { opacity: 0.6 }]}
                   onPress={() => !isExisting && openDateTimePicker(index, 'start')}
                   disabled={!!isExisting}
                 >
-                  <Text style={styles.timeLabel}>From</Text>
-                  <Text style={[styles.timeText, isExisting && styles.disabledText]}>{formatDateTime(slot.start_datetime)}</Text>
+                  <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>From</Text>
+                  <Text style={[styles.timeText, { color: colors.text }]}>{formatDateTime(slot.start_datetime)}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.timeButton, isExisting && styles.disabledButton]}
+                  style={[styles.timeButton, { backgroundColor: colors.background, borderColor: colors.border }, isExisting && { opacity: 0.6 }]}
                   onPress={() => !isExisting && openDateTimePicker(index, 'end')}
                   disabled={!!isExisting}
                 >
-                  <Text style={styles.timeLabel}>To</Text>
-                  <Text style={[styles.timeText, isExisting && styles.disabledText]}>{formatDateTime(slot.end_datetime)}</Text>
+                  <Text style={[styles.timeLabel, { color: colors.textSecondary }]}>To</Text>
+                  <Text style={[styles.timeText, { color: colors.text }]}>{formatDateTime(slot.end_datetime)}</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             <View style={styles.ratesSection}>
-              <Text style={styles.label}>Pricing</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Pricing</Text>
               <View style={styles.rateRow}>
                 <View style={styles.rateInput}>
-                  <Text style={styles.rateLabel}>Hourly Rate (₹)</Text>
+                  <Text style={[styles.rateLabel, { color: colors.textSecondary }]}>Hourly Rate (₹)</Text>
                   <TextInput
-                    style={[styles.input, isExisting && styles.disabledInput]}
+                    style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }, isExisting && { opacity: 0.6 }]}
                     value={slot.hourly_rate.toString()}
                     onChangeText={(text) => !isExisting && updateSlot(index, 'hourly_rate', parseFloat(text) || 0)}
                     keyboardType="numeric"
                     placeholder="25"
+                    placeholderTextColor={colors.textSecondary}
                     editable={!isExisting}
                   />
                 </View>
                 <View style={styles.rateInput}>
-                  <Text style={styles.rateLabel}>Daily Rate (₹)</Text>
+                  <Text style={[styles.rateLabel, { color: colors.textSecondary }]}>Daily Rate (₹)</Text>
                   <TextInput
-                    style={[styles.input, isExisting && styles.disabledInput]}
+                    style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }, isExisting && { opacity: 0.6 }]}
                     value={slot.daily_rate.toString()}
                     onChangeText={(text) => !isExisting && updateSlot(index, 'daily_rate', parseFloat(text) || 0)}
                     keyboardType="numeric"
                     placeholder="200"
+                    placeholderTextColor={colors.textSecondary}
                     editable={!isExisting}
                   />
                 </View>
@@ -403,27 +409,29 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
             </View>
 
             <View style={styles.limitsSection}>
-              <Text style={styles.label}>Rental Limits</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Rental Limits</Text>
               <View style={styles.rateRow}>
                 <View style={styles.rateInput}>
-                  <Text style={styles.rateLabel}>Min Hours</Text>
+                  <Text style={[styles.rateLabel, { color: colors.textSecondary }]}>Min Hours</Text>
                   <TextInput
-                    style={[styles.input, isExisting && styles.disabledInput]}
+                    style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }, isExisting && { opacity: 0.6 }]}
                     value={slot.min_rental_hours.toString()}
                     onChangeText={(text) => !isExisting && updateSlot(index, 'min_rental_hours', parseInt(text) || 1)}
                     keyboardType="numeric"
                     placeholder="2"
+                    placeholderTextColor={colors.textSecondary}
                     editable={!isExisting}
                   />
                 </View>
                 <View style={styles.rateInput}>
-                  <Text style={styles.rateLabel}>Max Hours</Text>
+                  <Text style={[styles.rateLabel, { color: colors.textSecondary }]}>Max Hours</Text>
                   <TextInput
-                    style={[styles.input, isExisting && styles.disabledInput]}
+                    style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }, isExisting && { opacity: 0.6 }]}
                     value={slot.max_rental_hours.toString()}
                     onChangeText={(text) => !isExisting && updateSlot(index, 'max_rental_hours', parseInt(text) || 24)}
                     keyboardType="numeric"
                     placeholder="24"
+                    placeholderTextColor={colors.textSecondary}
                     editable={!isExisting}
                   />
                 </View>
@@ -433,7 +441,7 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
         );
         })}
 
-        <TouchableOpacity style={styles.addSlotButton} onPress={addNewSlot}>
+        <TouchableOpacity style={[styles.addSlotButton, { backgroundColor: colors.primary }]} onPress={addNewSlot}>
           <Text style={styles.addSlotText}>+ Add Time Slot</Text>
         </TouchableOpacity>
         </ScrollView>
@@ -451,16 +459,16 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
 
       {showHourPicker && (
         <View style={styles.hourPickerModal}>
-          <View style={styles.hourPickerContent}>
-            <Text style={styles.hourPickerTitle}>Select Hour</Text>
+          <View style={[styles.hourPickerContent, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.hourPickerTitle, { color: colors.text }]}>Select Hour</Text>
             <ScrollView style={styles.hourList} showsVerticalScrollIndicator={false}>
               {generateHourOptions().map((hour) => (
                 <TouchableOpacity 
                   key={hour.value}
-                  style={[styles.hourOption, selectedHour === hour.value && styles.hourOptionSelected]}
+                  style={[styles.hourOption, { backgroundColor: colors.background }, selectedHour === hour.value && { backgroundColor: colors.primary }]}
                   onPress={() => setSelectedHour(hour.value)}
                 >
-                  <Text style={[styles.hourOptionText, selectedHour === hour.value && styles.hourOptionTextSelected]}>
+                  <Text style={[styles.hourOptionText, { color: colors.text }, selectedHour === hour.value && { color: '#fff', fontWeight: '600' }]}>
                     {hour.label}
                   </Text>
                 </TouchableOpacity>
@@ -468,16 +476,16 @@ export default function SetVehicleAvailabilityScreen({ navigation, route }: any)
             </ScrollView>
             <View style={styles.hourPickerButtons}>
               <TouchableOpacity 
-                style={styles.hourPickerButton}
+                style={[styles.hourPickerButton, { borderColor: colors.border }]}
                 onPress={() => setShowHourPicker(false)}
               >
-                <Text style={styles.hourPickerButtonText}>Cancel</Text>
+                <Text style={[styles.hourPickerButtonText, { color: colors.textSecondary }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.hourPickerButton, styles.hourPickerConfirm]}
+                style={[styles.hourPickerButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                 onPress={() => handleHourSelect(selectedHour)}
               >
-                <Text style={[styles.hourPickerButtonText, styles.hourPickerConfirmText]}>Select</Text>
+                <Text style={[styles.hourPickerButtonText, { color: '#fff' }]}>Select</Text>
               </TouchableOpacity>
             </View>
           </View>
